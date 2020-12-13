@@ -5,7 +5,7 @@ This project aims to build different NLP models for sentiment analysis and class
 
 | <p> &#128204;</p> Checkpoint                                              | Status |
 | ------------------------------------------------- | ----   |
-| <p>&#10036;</p> <input type="checkbox" disabled checked /> Define Keywords  |  :clock930:   |
+| ◾ <input type="checkbox" disabled checked /> Define Keywords  |  :clock930:   |
 | :black_circle: <input type="checkbox" disabled  checked/>  Tweet scraping |  :clock930:    |
 | :black_circle: <input type="checkbox" disabled  checked/> Text processing |  :clock930:    |
 | :black_circle: <input type="checkbox" disabled  checked/>  Preprocessing |  :clock930:   |
