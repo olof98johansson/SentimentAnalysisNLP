@@ -1,3 +1,8 @@
+# NOTE: TWINT NEEDS TO BE INSTALLEED BY THE FOLLOWING COMMAND:
+# pip install --user --upgrade git+https://github.com/twintproject/twint.git@origin/master#egg=twint
+# OTHERWISE IT WON'T WORK
+
+
 import twint
 import nest_asyncio
 nest_asyncio.apply()
