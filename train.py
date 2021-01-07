@@ -5,6 +5,9 @@ import preprocessing
 from collections import defaultdict
 import time
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_style('darkgrid')
 
 
 
@@ -141,6 +144,27 @@ def train_rnn(save_path = None):
 
 
     return history
+
+
+def show_progress(history):
+    fig, axes = plt.subplots(1,2)
+    fig.suptitle('Training progression', fontsize=18)
+    axes[0].plot(history['training loss'], linewidth=2, color='#99ccff', alpha=0.9, label='Training')
+    axes[0].plot(history['validation loss'], linewidth=2, color='#cc99ff', alpha=0.9, label='Validation')
+    axes[0].set_xlabel(xlabel='Epochs', fontsize=12)
+    axes[0].set_ylabel(ylabel=r'$\mathcal{L}(\hat{y}, y)$', fontsize=12)
+    axes[0].set_title(title='Losses', fontsize=14)
+
+    axes[1].plot(history['training acc'], linewidth=2, color='#99ccff', alpha=0.9, label='Training')
+    axes[1].plot(history['validation acc'], linewidth=2, color='#cc99ff', alpha=0.9, label='Validation')
+    axes[1].set_xlabel(xlabel='Epochs', fontsize=12)
+    axes[1].set_ylabel(ylabel=r'$\theta$', fontsize=12)
+    axes[1].set_title(title='Accuracies', fontsize=14)
+
+    axes[0].legend()
+    axes[1].legend()
+    plt.show()
+
 
 
 
