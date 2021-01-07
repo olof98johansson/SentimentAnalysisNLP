@@ -48,19 +48,23 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
     print(f'Removed total of {nr_removed_tweets}')
 
     # Cleaning the tweet texts
-    for df in df_list:
+    for idx, df in enumerate(df_list):
         tweet = df.copy()['tweet']
         # Removing URLs
-        tweet = re.sub(r"http\S+", "", tweet)
-        tweet = re.sub(r"\S+\.com\S", "", tweet)
+        tweet = re.sub(r"http\S+", " ", tweet)
+        tweet = re.sub(r"\S+\.com\S", " ", tweet)
 
         # Remove mentions
-        tweet = re.sub(r'\@\w+', '', tweet)
+        tweet = re.sub(r'\@\w+', ' ', tweet)
 
         # Remove non-alphabetic tokens
-        tweet = re.sub('[^A-Za-z]', '', tweet.lower())
+        tweet = re.sub('[^A-Za-z]', ' ', tweet.lower())
 
-        df['tweet'] = tweet
+        # Remove from dataset if tweet empty after cleaning
+        if tweet == 0:
+            df_list.pop(idx)
+        else:
+            df['tweet'] = tweet
 
     print('Successfully cleaned data!')
 
@@ -83,8 +87,8 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
             print(f'Unable to save data to "{save_path}", check the path and data!')
             print(f'Exception:\n{e}')
 
-
-    return df_list
+    dataset_docs = [df['tweet'] for df in df_list]
+    return dataset_docs, df_list[0].keys()
 
 # Testing out with test file of 10 tweets
 
