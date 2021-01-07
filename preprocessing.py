@@ -149,7 +149,8 @@ def preprocess(batch_size = 64):
     val_loader = DataLoader(val_dataset, batch_size,
                             shuffle=True, collate_fn=batcher)
     dataloaders = [train_loader, val_loader]
-    return dataloaders
+
+    return dataloaders, vocab_size, n_classes
 
 
 

@@ -1,8 +1,28 @@
 import torch
 import torch.nn as nn
+import preprocessing
+import os
 
 
+class ModelUtils:
+    def save_model(save_path, model):
+        root, ext = os.path.splitext(save_path)
+        if not ext:
+            save_path = root + '.pth'
+        try:
+            torch.save(model.state_dict(), save_path)
+            print(f'Successfully saved to model to "{save_path}"!')
+        except Exception as e:
+            print(f'Unable to save model, check save path!')
+            print(f'Exception:\n{e}')
 
+    def load_model(load_path, model):
+        try:
+            model.load_state_dict(torch.load(load_path))
+            print(f'Successfully loaded the model from path "{load_path}"')
+
+        except Exception as e:
+            print(f'Unable to load the weights, check if different model or incorrect path!')
 
 class RNNModel(nn.Module):
 
@@ -46,3 +66,5 @@ class RNNModel(nn.Module):
         drop = self.dropout(top_both)
         out = self.linear(drop)
         return out
+
+
