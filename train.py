@@ -56,6 +56,8 @@ class EarlyStopping(object):
             if self.nr_no_improved >= self.patience:
                 print(f'Early stopping! Model did not improve for last {self.nr_no_improved} epochs')
                 return True
+            else:
+                return False
 
 
 class rnn_params:
