@@ -1,13 +1,12 @@
-'''
-    Basic data cleaning script of checking the collected dataset and removing unwanted
-    keys and features. Improvements of further cleaning functionality will be added
-'''
 
 import json
 import csv
 import re
 
 def load_json(path):
+    '''
+        Loads collected data in json format and converts to csv
+    '''
     if not path.endswith('.json'):
         print('File path not JSON file...')
         return None
@@ -25,14 +24,44 @@ def load_json(path):
         return df_list[0].keys(), df_list
 
 
-def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=None):
-    keys, df_list = load_json(path)
+def combine_and_label(paths, labels):
+    '''
+        Combining multiple collections of data files and adds corresponding label
+        (i.e depressive or non-depressive). List of labels in correct order with
+        respect to the paths order must be specified manually
+    '''
 
-    # Remove unwanted key features
-    for df in df_list:
-        for d in df.copy():
-            if d in df and d in keys_to_remove:
-                df.pop(d)
+    if not type(paths)==type(list()):
+        print('"paths" argument is not of type list! Please pass list of the paths to the collected data to be combined!')
+        return None
+    if not len(paths) == len(labels):
+        print(f'Number of datafile paths of {len(paths)} is not the same as number of labels of {len(labels)}!')
+        return None
+
+    df_list = []
+    for idx, path in enumerate(paths):
+        try:
+            curr_keys, curr_df_list = load_json(path)
+        except Exception as e:
+            print(f'Unable to load data from path "{path}", check path name and file!')
+            print(f'Exception:\n{e}')
+            return None
+        for df in curr_df_list:
+            df['label'] = labels[idx]
+            df_list.append(df)
+
+    return df_list
+
+
+
+def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None):
+    '''
+        Cleans the data based on unwanted hashtags, duplication of tweets occured due
+        to sharing of keywords, removal of mentions, urls, non-english alphabetic tokens
+        and empty tweets obtained after cleaning
+    '''
+
+    df_list = combine_and_label(paths, labels)
 
     print(f'\nKey features after cleaning:\n{df_list[0].keys()}')
 
@@ -46,6 +75,17 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
             nr_removed_tweets += 1
 
     print(f'Removed total of {nr_removed_tweets}')
+
+    # Removes duplicate of tweets
+    unique_ids = {}
+    for idx, df in enumerate(df_list):
+        tweet_id = df.copy()['id']
+        if not tweet_id in unique_ids:
+            unique_ids[str(tweet_id)] = 1
+        else:
+            print('Found douplicate of tweet id, removing the duplicate!')
+            df_list.pop(idx)
+
 
     # Cleaning the tweet texts
     for idx, df in enumerate(df_list):
@@ -70,6 +110,7 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
 
 
     # Saving list of tweet dicts to csv format
+
     if save_path:
         if not save_path.endswith('.csv'):
             print('Save path is missing .csv format extension!')
@@ -79,6 +120,7 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
                 csv_file = csv.DictWriter(output_file,
                                           fieldnames=df_list[0].keys(),
                                           )
+
                 csv_file.writeheader()
                 csv_file.writerows(df_list)
                 print(f'Data succesfully saved to "{save_path}"')
@@ -88,30 +130,5 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
             print(f'Exception:\n{e}')
 
     dataset_docs = [df['tweet'] for df in df_list]
-    return dataset_docs, df_list[0].keys()
-
-# Testing out with test file of 10 tweets
-
-#keys_to_remove = [
-#    'id', 'conversation_id','user_id', 'username', 'name','mentions', 'urls',
-#    'photos', 'replies_count', 'retweets_count', 'likes_count',
-#    'cashtags', 'link', 'retweet', 'quote_url', 'video', 'thumbnail', 'near',
-#    'geo', 'source', 'user_rt_id', 'user_rt', 'retweet_id', 'reply_to', 'retweet_date',
-#    'translate', 'trans_src', 'trans_dest'
-#]
-
-# datacleaning('test.json', keys_to_remove = keys_to_remove)
-
-
-
-
-########### Keys before cleaning ###########
-#['id', 'conversation_id', 'created_at', 'date', 'time', 'timezone', 'user_id',
-# 'username', 'name', 'place', 'tweet', 'language', 'mentions', 'urls', 'photos',
-# 'replies_count', 'retweets_count', 'likes_count', 'hashtags', 'cashtags', 'link',
-# 'retweet', 'quote_url', 'video', 'thumbnail', 'near', 'geo', 'source',
-# 'user_rt_id', 'user_rt', 'retweet_id', 'reply_to', 'retweet_date', 'translate',
-# 'trans_src', 'trans_dest']
-
-########### Keys after cleaning ###########
-#['created_at', 'date', 'time', 'timezone', 'place', 'tweet', 'language', 'hashtags']
+    dataset_labels = [df['label'] for df in df_list]
+    return [dataset_docs, dataset_labels], df_list[0].keys()

@@ -17,23 +17,30 @@ class config:
     PAD = '___PAD___'
     UNKNOWN = '___UNKNOWN___'
 
-    batch_size = 64
+    paths = []
+    labels = ['depressed', 'depressed', 'depressed', 'not-depressed', 'not-depressed'] #example only
+    save_path = './training_data.csv'
+    keywords = []
+    nr_of_tweets = 100000 # example
+    hashtags_to_remove = []
 
 
-def collect_dataset(paths, keywords, nr_of_tweets, keys_to_remove, hashtags_to_remove):
+
+def collect_dataset(paths, keywords, nr_of_tweets, hashtags_to_remove):
     '''
         Collecting the dataset and cleans the data
     '''
 
-    root, ext = os.path.splitext(paths)
-    json_path = root+'.json'
-    csv_path = root+'.csv'
+    roots, exts = [os.path.splitext(path) for path in paths]
+    save_root, save_exts = os.path.splitext(config.save_path)
+    json_paths = [root+'.json' for root in roots]
+    csv_path = save_root+'.csv'
 
     twint_scraping.collect_tweets(keywords=keywords, nr_tweets=nr_of_tweets, output_file=json_path)
-    dataset_docs, keys = data_cleaning.datacleaning(path=json_path, keys_to_remove=keys_to_remove,
-                                              hashtags_to_remove=hashtags_to_remove, save_path=csv_path)
+    dataset, keys = data_cleaning.datacleaning(paths=json_paths, labels=config.labels, hashtags_to_remove=hashtags_to_remove,
+                                                    save_path=csv_path)
 
-    return dataset_docs, keys
+    return dataset, keys
 
 
 class DocumentDataset(Dataset):
@@ -110,11 +117,15 @@ class Vocab:
         return len(self.enc_to_word)
 
 
-def preprocess(X, Y, batch_size = 64):
+def preprocess(batch_size = 64):
     '''
         Function for preprocessing the data which splits the data into train/val, builds
         the vocabulary, fits the label encoder and creates the dataloaders
     '''
+    data, keys = collect_dataset(paths=config.paths, keywords=config.keywords,
+                           nr_of_tweets=config.nr_of_tweets,
+                           hashtags_to_remove=config.hashtags_to_remove)
+    X, Y = data
     x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=0)
 
     vocab = Vocab()

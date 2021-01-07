@@ -32,13 +32,13 @@ def collect_tweets(keywords = None, nr_tweets = None, output_file=None):
 # EXAMPLE
 def test():
     config = twint.Config()
-    config.Search = "depressed loneliness"
+    config.Search = "hatemyself"
     config.Lang = "en"
     config.Limit = 10
     #config.Since = "2019–11–29 11:01:01"
     #config.To = "2020–11–29 11:01:01"
     config.Store_json = True
-    config.Output = "test.json"
+    config.Output = "test2.json"
 
     #running search
     twint.run.Search(config)
