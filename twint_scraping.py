@@ -32,7 +32,7 @@ def collect_tweets(keywords = None, nr_tweets = None, output_file=None):
 # EXAMPLE
 def test():
     config = twint.Config()
-    config.Search = "depressed"
+    config.Search = "depressed loneliness"
     config.Lang = "en"
     config.Limit = 10
     #config.Since = "2019–11–29 11:01:01"
