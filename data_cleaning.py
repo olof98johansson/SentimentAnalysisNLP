@@ -5,6 +5,7 @@
 
 import json
 import csv
+import re
 
 def load_json(path):
     if not path.endswith('.json'):
@@ -46,19 +47,42 @@ def datacleaning(path, keys_to_remove=[], hashtags_to_remove = [], save_path=Non
 
     print(f'Removed total of {nr_removed_tweets}')
 
+    # Cleaning the tweet texts
+    for df in df_list:
+        tweet = df.copy()['tweet']
+        # Removing URLs
+        tweet = re.sub(r"http\S+", "", tweet)
+        tweet = re.sub(r"\S+\.com\S", "", tweet)
+
+        # Remove mentions
+        tweet = re.sub(r'\@\w+', '', tweet)
+
+        # Remove non-alphabetic tokens
+        tweet = re.sub('[^A-Za-z]', '', tweet.lower())
+
+        df['tweet'] = tweet
+
+    print('Successfully cleaned data!')
+
+
     # Saving list of tweet dicts to csv format
     if save_path:
         if not save_path.endswith('.csv'):
             print('Save path is missing .csv format extension!')
             save_path = save_path + '.csv'
+        try:
+            with open(save_path, 'w', encoding='utf8', newline='') as output_file:
+                csv_file = csv.DictWriter(output_file,
+                                          fieldnames=df_list[0].keys(),
+                                          )
+                csv_file.writeheader()
+                csv_file.writerows(df_list)
+                print(f'Data succesfully saved to "{save_path}"')
 
-        with open(save_path, 'w', encoding='utf8', newline='') as output_file:
-            csv_file = csv.DictWriter(output_file,
-                                      fieldnames=df_list[0].keys(),
-                                      )
-            csv_file.writeheader()
-            csv_file.writerows(df_list)
-            print(f'Data succesfully saved to "{save_path}"')
+        except Exception as e:
+            print(f'Unable to save data to "{save_path}", check the path and data!')
+            print(f'Exception:\n{e}')
+
 
     return df_list
 
