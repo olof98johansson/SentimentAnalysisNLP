@@ -5,6 +5,7 @@ import preprocessing
 from collections import defaultdict
 import time
 import os
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('darkgrid')
@@ -64,66 +65,75 @@ class rnn_params:
     rnn_type = 'lstm'
     emb_dim = 64
     rnn_size = 128
+    nr_layers = 1
     dropout = 0.5
     lr = 1e-3
     batch_size = 64
-    n_epochs = 10
+    n_epochs = 20
     decay = 1e-5
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    patience = 5
+    patience = 3
 
-def train_rnn(save_path = None):
+def train_rnn(save_path = None, collect=True):
     '''
         Training function for the rnn model that trains and validates the models performance
     '''
-
-    dataloaders, vocab_size, n_classes = preprocessing.preprocess(rnn_params.batch_size)
+    dataloaders, vocab_size, n_classes = preprocessing.preprocess(rnn_params.batch_size, collect=collect)
     train_loader, val_loader = dataloaders
-    model = models.RNNModel(rnn_type=rnn_params.rnn_type, voc_size=vocab_size,
-                            emb_dim=rnn_params.emb_dim, rnn_size=rnn_params.rnn_size,
-                            n_classes=n_classes)
+    model = models.RNNModel(rnn_type=rnn_params.rnn_type, nr_layers=rnn_params.nr_layers,
+                            voc_size=vocab_size, emb_dim=rnn_params.emb_dim, rnn_size=rnn_params.rnn_size,
+                            dropout=rnn_params.dropout, n_classes=n_classes)
 
-    loss_fn = nn.CrossEntropyLoss()
+    #loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.BCELoss()
+    #loss_fn = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=rnn_params.lr, weight_decay=rnn_params.decay)
     model.to(rnn_params.device)
 
     history = defaultdict(list)
     init_training_time = time.time()
     early_stopping = EarlyStopping(patience=rnn_params.patience)
+
     for epoch in range(1, rnn_params.n_epochs):
         model.train()
+        h = model.init_hidden(rnn_params.batch_size, device=rnn_params.device)
         n_correct, n_instances, total_loss = 0,0,0
         for inputs, labels in train_loader:
+            model.zero_grad()
             inputs = inputs.to(rnn_params.device)
             labels = labels.to(rnn_params.device)
+            h = tuple([each.data for each in h])
+            outputs, h = model(inputs, h)
 
-            outputs = model(inputs)
-            loss = loss_fn(outputs, labels)
+            loss = loss_fn(outputs.squeeze(), labels.float())
 
             total_loss+=loss.item()
             n_instances+=labels.shape[0]
-            predictions = outputs.argmax(dim=1)
-            n_correct += (predictions == labels).sum().item()
+            predictions = torch.round(outputs.squeeze())
+            n_correct += (torch.sum(predictions == labels.float())).item()
 
             optimizer.zero_grad()
-            loss_fn.backward()
+            loss.backward()
             optimizer.step()
         epoch_loss = total_loss / (len(train_loader))
         epoch_acc = n_correct / n_instances
 
         n_correct_val, n_instances_val, total_loss_val = 0, 0, 0
         model.eval()
+        val_h = model.init_hidden(rnn_params.batch_size, device=rnn_params.device)
         for val_inp, val_lab in val_loader:
             val_inp = val_inp.to(rnn_params.device)
             val_lab = val_lab.to(rnn_params.device)
 
-            val_out = model(val_inp)
-            val_loss = loss_fn(val_out, val_lab)
+            val_h = tuple([each.data for each in val_h])
+
+            val_out, val_h = model(val_inp, val_h)
+            val_loss = loss_fn(val_out.squeeze(), val_lab.float())
 
             total_loss_val += val_loss.item()
             n_instances_val += val_lab.shape[0]
-            val_preds = val_out.argmax(dim=1)
-            n_correct_val += (val_preds == val_lab).sum().item()
+            val_preds = torch.round(val_out.squeeze())
+            n_correct_val += (torch.sum(val_preds == val_lab.float())).item()
 
         epoch_val_loss = total_loss_val / len(val_loader)
         epoch_val_acc = n_correct_val / n_instances_val
@@ -148,24 +158,27 @@ def train_rnn(save_path = None):
     return history
 
 
-def show_progress(history):
-    fig, axes = plt.subplots(1,2)
+def show_progress(history, save_name = None):
+    fig, axes = plt.subplots(1, 2, figsize=(21, 7))
     fig.suptitle('Training progression', fontsize=18)
     axes[0].plot(history['training loss'], linewidth=2, color='#99ccff', alpha=0.9, label='Training')
     axes[0].plot(history['validation loss'], linewidth=2, color='#cc99ff', alpha=0.9, label='Validation')
     axes[0].set_xlabel(xlabel='Epochs', fontsize=12)
     axes[0].set_ylabel(ylabel=r'$\mathcal{L}(\hat{y}, y)$', fontsize=12)
-    axes[0].set_title(title='Losses', fontsize=14)
+    axes[0].set_title(label='Losses', fontsize=14)
 
     axes[1].plot(history['training acc'], linewidth=2, color='#99ccff', alpha=0.9, label='Training')
     axes[1].plot(history['validation acc'], linewidth=2, color='#cc99ff', alpha=0.9, label='Validation')
     axes[1].set_xlabel(xlabel='Epochs', fontsize=12)
-    axes[1].set_ylabel(ylabel=r'$\theta$', fontsize=12)
-    axes[1].set_title(title='Accuracies', fontsize=14)
+    axes[1].set_ylabel(ylabel=r'%', fontsize=12)
+    axes[1].set_title(label='Accuracies', fontsize=14)
 
     axes[0].legend()
     axes[1].legend()
+    if save_name:
+        plt.savefig(save_name, bbox_inches='tight')
     plt.show()
+
 
 
 

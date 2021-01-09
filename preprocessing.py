@@ -26,17 +26,23 @@ class config:
 
 
 
-def collect_dataset(paths, keywords, nr_of_tweets, hashtags_to_remove):
+def collect_dataset(paths, keywords, nr_of_tweets, hashtags_to_remove, collect=True):
     '''
         Collecting the dataset and cleans the data
     '''
-
-    roots, exts = [os.path.splitext(path) for path in paths]
+    roots, exts = [], []
+    for path in paths:
+        root, ext = os.path.splitext(path)
+        roots.append(root)
+        exts.append(ext)
+    #roots, exts = [os.path.splitext(path) for path in paths]
     save_root, save_exts = os.path.splitext(config.save_path)
     json_paths = [root+'.json' for root in roots]
     csv_path = save_root+'.csv'
+    if collect:
+        for idx, json_path in enumerate(json_paths):
+            twint_scraping.collect_tweets(keywords=keywords[idx], nr_tweets=nr_of_tweets[idx], output_file=json_path)
 
-    twint_scraping.collect_tweets(keywords=keywords, nr_tweets=nr_of_tweets, output_file=json_path)
     dataset, keys = data_cleaning.datacleaning(paths=json_paths, labels=config.labels, hashtags_to_remove=hashtags_to_remove,
                                                     save_path=csv_path)
 
@@ -117,14 +123,15 @@ class Vocab:
         return len(self.enc_to_word)
 
 
-def preprocess(batch_size = 64):
+def preprocess(batch_size=64, collect=True):
     '''
         Function for preprocessing the data which splits the data into train/val, builds
         the vocabulary, fits the label encoder and creates the dataloaders
     '''
     data, keys = collect_dataset(paths=config.paths, keywords=config.keywords,
                            nr_of_tweets=config.nr_of_tweets,
-                           hashtags_to_remove=config.hashtags_to_remove)
+                           hashtags_to_remove=config.hashtags_to_remove,
+                                 collect=collect)
     X, Y = data
     x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=0)
 
@@ -144,10 +151,10 @@ def preprocess(batch_size = 64):
     train_dataset = DocumentDataset(vocab.encode(x_train),
                                     encoder.transform(y_train))
     train_loader = DataLoader(train_dataset, batch_size,
-                              shuffle=True, collate_fn=batcher)
+                              shuffle=True, collate_fn=batcher, drop_last=True)
     val_dataset = DocumentDataset(vocab.encode(x_val), encoder.transform(y_val))
     val_loader = DataLoader(val_dataset, batch_size,
-                            shuffle=True, collate_fn=batcher)
+                            shuffle=True, collate_fn=batcher, drop_last=True)
     dataloaders = [train_loader, val_loader]
 
     return dataloaders, vocab_size, n_classes

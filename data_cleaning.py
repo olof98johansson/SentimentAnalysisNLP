@@ -63,7 +63,6 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None):
 
     df_list = combine_and_label(paths, labels)
 
-    print(f'\nKey features after cleaning:\n{df_list[0].keys()}')
 
     # Remove tweets with specific hashtags
     nr_removed_tweets = 0
