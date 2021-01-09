@@ -18,6 +18,7 @@ This project aims to build different NLP models for sentiment analysis and class
 <hr>
 
 <h2 align="center"> First training session with LSTM model </h2>
+
 ![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/initial_training.png?raw=true)
 <br>
 
