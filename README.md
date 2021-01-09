@@ -5,17 +5,24 @@ This project aims to build different NLP models for sentiment analysis and class
 
 | 📌 Checkpoint                                              | Status |
 | ------------------------------------------------- | ----   |
-| ◾ <input type="checkbox" disabled checked /> Define Keywords  |  :clock930:   |
-| ◾ <input type="checkbox" disabled  checked/>  Tweet scraping |  :clock930:    |
-| ◾ <input type="checkbox" disabled  checked/> Text processing |  :clock930:    |
-| ◾ <input type="checkbox" disabled  checked/>  Preprocessing |  :clock930:   |
-| ◾ <input type="checkbox" disabled  checked/> Implement NLP models |  :clock930:    |
+| ◾ <input type="checkbox" disabled checked /> Define Keywords  |  :heavy_check_mark:  |
+| ◾ <input type="checkbox" disabled  checked/>  Tweet scraping |  :heavy_check_mark:    |
+| ◾ <input type="checkbox" disabled  checked/> Text processing |  :heavy_check_mark:    |
+| ◾ <input type="checkbox" disabled  checked/>  Preprocessing |  :heavy_check_mark:   |
+| ◾ <input type="checkbox" disabled  checked/> Implement NLP models |  :clock930: :heavy_check_mark:   |
 | ◾ <input type="checkbox" disabled  checked/> Benchmarking |   :clock930:   |
 | ◾ <input type="checkbox" disabled  checked/> Visualizations |  :clock930:    |
 | ◾ <input type="checkbox" disabled  checked/> Test predictions |  :clock930:    |
 | ◾ <input type="checkbox" disabled  checked/> Forecasting |  :clock930:    |
 
 <hr>
+
+<h2 align="center"> First training session with LSTM model </h2>
+![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/initial_training.png?raw=true)
+<br>
+
+<hr>
+
 
 <h2 align="center"> Example of using twint </h2>
 Running the test function in the twint script with json output format, the data is saved as belowed:
