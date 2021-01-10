@@ -22,6 +22,11 @@ This project aims to build different NLP models for sentiment analysis and class
 ![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/training_animation_progress.gif?raw=true)
 <br>
 
+<h2 align="center"> Initial forecasting of simple example data </h2>
+
+![First forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/predictions_forecast.png?raw=true)
+<br>
+
 <hr>
 
 
