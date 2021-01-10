@@ -2,6 +2,7 @@
 import json
 import csv
 import re
+import numpy as np
 
 def load_json(path):
     '''
@@ -24,7 +25,7 @@ def load_json(path):
         return df_list[0].keys(), df_list
 
 
-def combine_and_label(paths, labels):
+def combine_and_label(paths, labels, train=True):
     '''
         Combining multiple collections of data files and adds corresponding label
         (i.e depressive or non-depressive). List of labels in correct order with
@@ -34,9 +35,10 @@ def combine_and_label(paths, labels):
     if not type(paths)==type(list()):
         print('"paths" argument is not of type list! Please pass list of the paths to the collected data to be combined!')
         return None
-    if not len(paths) == len(labels):
-        print(f'Number of datafile paths of {len(paths)} is not the same as number of labels of {len(labels)}!')
-        return None
+    if train:
+        if not len(paths) == len(labels):
+            print(f'Number of datafile paths of {len(paths)} is not the same as number of labels of {len(labels)}!')
+            return None
 
     df_list = []
     for idx, path in enumerate(paths):
@@ -47,22 +49,22 @@ def combine_and_label(paths, labels):
             print(f'Exception:\n{e}')
             return None
         for df in curr_df_list:
-            df['label'] = labels[idx]
+            if train:
+                df['label'] = labels[idx]
             df_list.append(df)
 
     return df_list
 
 
 
-def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None):
+def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=True):
     '''
         Cleans the data based on unwanted hashtags, duplication of tweets occured due
         to sharing of keywords, removal of mentions, urls, non-english alphabetic tokens
         and empty tweets obtained after cleaning
     '''
 
-    df_list = combine_and_label(paths, labels)
-
+    df_list = combine_and_label(paths, labels, train=train)
 
     # Remove tweets with specific hashtags
     nr_removed_tweets = 0
@@ -129,5 +131,8 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None):
             print(f'Exception:\n{e}')
 
     dataset_docs = [df['tweet'] for df in df_list]
-    dataset_labels = [df['label'] for df in df_list]
-    return [dataset_docs, dataset_labels], df_list[0].keys()
+    if train:
+        dataset_labels = [df['label'] for df in df_list]
+        return [dataset_docs, dataset_labels], df_list[0].keys()
+    else:
+        return dataset_docs, df_list[0].keys

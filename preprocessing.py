@@ -23,6 +23,11 @@ class config:
     keywords = []
     nr_of_tweets = 100000 # example
     hashtags_to_remove = []
+    encoder = None
+    vocab = None
+    vocab_size = 0
+    n_classes = 0
+
 
 
 
@@ -137,6 +142,7 @@ def preprocess(batch_size=64, collect=True):
 
     vocab = Vocab()
     vocab.build_vocab(x_train)
+    config.vocab = vocab
 
     encoder = LabelEncoder()
     encoder.fit(y_train)

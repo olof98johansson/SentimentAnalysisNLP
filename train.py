@@ -12,6 +12,7 @@ sns.set_style('darkgrid')
 
 
 
+
 def Logger(elapsed_time, epoch, epochs, tr_loss, tr_acc, val_loss, val_acc):
     '''
         Logger function to track training progress
@@ -150,12 +151,14 @@ def train_rnn(save_path = None, collect=True):
         early_stop_check = early_stopping.update(epoch_val_loss)
         if early_stop_check:
             models.ModelUtils.save_model(save_path=save_path, model=model)
+            return history
 
     if save_path:
         models.ModelUtils.save_model(save_path=save_path, model=model)
 
 
     return history
+
 
 
 def show_progress(history, save_name = None):
@@ -178,6 +181,7 @@ def show_progress(history, save_name = None):
     if save_name:
         plt.savefig(save_name, bbox_inches='tight')
     plt.show()
+
 
 
 
