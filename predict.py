@@ -108,8 +108,8 @@ def predict(testdata, path_to_weights, encoder, vocab_size, n_classes):
 
 
 def run_predictions(collect_test_data=False):
-    status_results = defaultdict(list)
-    preds_results = defaultdict(list)
+    status_results = {}
+    preds_results = {}
     if collect_test_data:
         for idx, ind_paths in enumerate(Config.test_set_json_paths):
             testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
@@ -119,8 +119,8 @@ def run_predictions(collect_test_data=False):
 
             preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
                                                     encoder, vocab_size, n_classes)
-            status_results[f'timespan_{idx}'].append(preds_status_list)
-            preds_results[f'timespan_{idx}'].append(preds_list)
+            status_results[f'timespan_{idx}'] = preds_status_list
+            preds_results[f'timespan_{idx}'] = preds_list
 
     else:
         for idx, ind_paths in enumerate(Config.test_set_json_paths):
@@ -131,25 +131,32 @@ def run_predictions(collect_test_data=False):
 
             preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
                                                     encoder, vocab_size, n_classes)
-            status_results[f'timespan_{idx}'].append(preds_status_list)
-            preds_results[f'timespan_{idx}'].append(preds_list)
+            status_results[f'timespan_{idx}'] = preds_status_list
+            preds_results[f'timespan_{idx}'] = preds_list
 
     return status_results, preds_results
 
 
-def plot_predictions(status_results, preds_results):
-    timespans = list(status_results)
-    print(timespans)
-    print(np.shape(status_results[0]))
-    print(status_results)
-    nr_depressive = [(status_results[t_idx] == 'depressive').sum() for t_idx in len(timespans)]
-    percentage_dep = [((sr[timespans[idx]] == 'depressive').sum())/len(sr[timespans[idx]]) for idx, sr in enumerate(status_results)]
+def plot_predictions(status_results, preds_results, save_name='./predictions_forecast.png'):
+    timespans = list(status_results.keys())
+    nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in range(len(timespans))]
+    percentage_dep = [((np.array(status_results[timespans[t_idx]]) == 'depressive').sum())/len(status_results[timespans[t_idx]]) for t_idx in range(len(timespans))]
+    text_perc_dep = [format(percentage_dep[i]*100, '.2f') for i in range(len(percentage_dep))]
+    ave_probs = [np.mean(np.array(preds_results[timespans[t_idx]])) for t_idx in range(len(timespans))]
+    text_ave_probs = [format(ave_probs[i]*100, '.2f') for i in range(len(ave_probs))]
 
-    fig = plt.figure(20, 10)
-    plt.bar(timespans, percentage_dep, color="#ff3399", width=0.6)
-    plt.xlabel('Time period')
-    plt.ylabel('Percentage %')
-    plt.title('Percentage of depressive tweets')
+    fig = plt.figure(figsize=(20, 10))
+    plt.bar(timespans, percentage_dep, color="#ff3399", width=0.6, alpha = 0.7)
+    for i, p in enumerate(percentage_dep):
+        plt.text(timespans[i], p / 2, f'{text_perc_dep[i]}%', color='black', fontweight='bold', fontsize=14)
+        plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', color='black', fontweight='bold', fontsize=10)
+    plt.xlabel('Time period', fontsize=14)
+    plt.ylabel('Percentage %', fontsize=14)
+    plt.title('Percentage of depressive tweets', fontsize=18)
+    if save_name:
+        root, ext = os.path.splitext(save_name)
+        save_name = root + '.png'
+        plt.savefig(save_name, bbox_inches='tight')
     plt.show()
 
 

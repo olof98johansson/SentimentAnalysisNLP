@@ -70,7 +70,7 @@ class rnn_params:
     dropout = 0.5
     lr = 1e-3
     batch_size = 64
-    n_epochs = 20
+    n_epochs = 30
     decay = 1e-5
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     patience = 3
@@ -151,13 +151,13 @@ def train_rnn(save_path = None, collect=True):
         early_stop_check = early_stopping.update(epoch_val_loss)
         if early_stop_check:
             models.ModelUtils.save_model(save_path=save_path, model=model)
-            return history
+            return history, early_stop_check
 
     if save_path:
         models.ModelUtils.save_model(save_path=save_path, model=model)
 
 
-    return history
+    return history, early_stop_check
 
 
 
@@ -181,6 +181,50 @@ def show_progress(history, save_name = None):
     if save_name:
         plt.savefig(save_name, bbox_inches='tight')
     plt.show()
+
+def animate_progress(history, save_path, early_stop_check):
+    from celluloid import Camera
+    root, ext = os.path.splitext(save_path)
+    save_path = root + '.gif'
+
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+    camera = Camera(fig)
+    fig.suptitle('Training progression', fontsize=18)
+    axes[0].set_xlabel(xlabel='Epochs', fontsize=12)
+    axes[0].set_ylabel(ylabel=r'$\mathcal{L}(\hat{y}, y)$', fontsize=12)
+    axes[0].set_title(label='Losses', fontsize=14)
+
+    axes[1].set_xlabel(xlabel='Epochs', fontsize=12)
+    axes[1].set_ylabel(ylabel=r'%', fontsize=12)
+    axes[1].set_title(label='Accuracies', fontsize=14)
+
+    epochs = np.arange(len(history['training loss']))
+
+    for e in epochs:
+        axes[0].plot(epochs[:e], history['training loss'][:e], linewidth=2, color='#99ccff')
+        axes[0].plot(epochs[:e], history['validation loss'][:e], linewidth=2,  color='#cc99ff')
+
+        axes[1].plot(epochs[:e], history['training acc'][:e], linewidth=2, color='#99ccff')
+        axes[1].plot(epochs[:e], history['validation acc'][:e], linewidth=2, color='#cc99ff')
+        axes[0].legend(['Training', 'Validation'])
+        axes[1].legend(['Training', 'Validation'])
+        camera.snap()
+
+
+    for i in range(10):
+        axes[0].plot(epochs, history['training loss'], linewidth=2, color='#99ccff')
+        axes[0].plot(epochs, history['validation loss'], linewidth=2, color='#cc99ff')
+
+        axes[1].plot(epochs, history['training acc'], linewidth=2, color='#99ccff')
+        axes[1].plot(epochs, history['validation acc'], linewidth=2, color='#cc99ff')
+
+        axes[0].legend(['Training', 'Validation'])
+        axes[1].legend(['Training', 'Validation'])
+
+        camera.snap()
+
+    animation = camera.animate()
+    animation.save(save_path, writer='imagemagick')
 
 
 
