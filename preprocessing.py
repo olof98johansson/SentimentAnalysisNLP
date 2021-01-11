@@ -19,11 +19,28 @@ class config:
     PAD = '___PAD___'
     UNKNOWN = '___UNKNOWN___'
 
-    paths = []
-    labels = ['depressed', 'depressed', 'depressed', 'not-depressed', 'not-depressed'] #example only
-    save_path = './training_data.csv'
-    keywords = []
-    nr_of_tweets = 100000 # example
+    paths = ['./training_data/depressive1.json',
+             './training_data/depressive2.json',
+             './training_data/depressive3.json',
+             './training_data/depressive4.json',
+             './training_data/depressive5.json',
+             './training_data/depressive6.json',
+             './training_data/non-depressive1.json',
+             './training_data/non-depressive2.json',
+             './training_data/non-depressive3.json',
+             './training_data/non-depressive4.json',
+             './training_data/non-depressive5.json',
+             './training_data/non-depressive6.json']
+
+    labels = ['depressive', 'depressive', 'depressive', 'depressive', 'depressive', 'depressive',
+              'not-depressive', 'not-depressive', 'not-depressive', 'not-depressive',
+              'not-depressive', 'not-depressive']
+
+    save_path = './training_data/all_training_data.csv'
+    keywords = ['depressed', 'lonely', 'sad', 'depression', 'tired', 'anxious',
+                'happy', 'joy', 'thankful', 'hope', 'hopeful', 'glad']
+    nr_of_tweets = [5000, 5000, 5000, 5000, 5000, 5000,
+                    5000, 5000, 5000, 5000, 5000, 5000]
     hashtags_to_remove = []
     encoder = None
     vocab = None
@@ -153,8 +170,7 @@ def preprocess(batch_size=64, collect=True):
                            hashtags_to_remove=config.hashtags_to_remove,
                                  collect=collect)
     X, Y = data
-    X,Y = s(X, Y)
-    x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=0)
+    x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, shuffle=True, random_state=1)
 
     vocab = Vocab()
     vocab.build_vocab(x_train)
