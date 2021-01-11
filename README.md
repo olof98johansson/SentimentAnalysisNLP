@@ -10,16 +10,16 @@ This project aims to build different NLP models for sentiment analysis and class
 | ◾ <input type="checkbox" disabled  checked/> Text processing |  :heavy_check_mark:    |
 | ◾ <input type="checkbox" disabled  checked/>  Preprocessing |  :heavy_check_mark:   |
 | ◾ <input type="checkbox" disabled  checked/> Implement NLP models |  :clock930: :heavy_check_mark:   |
-| ◾ <input type="checkbox" disabled  checked/> Benchmarking |   :clock930:   |
+| ◾ <input type="checkbox" disabled  checked/> Benchmarking |   :no_entry_sign:   |
 | ◾ <input type="checkbox" disabled  checked/> Visualizations |  :clock930:    |
-| ◾ <input type="checkbox" disabled  checked/> Test predictions |  :clock930:    |
-| ◾ <input type="checkbox" disabled  checked/> Forecasting |  :clock930:    |
+| ◾ <input type="checkbox" disabled  checked/> Test predictions |  :heavy_check_mark:    |
+| ◾ <input type="checkbox" disabled  checked/> Forecasting | :heavy_check_mark:    |
 
 <hr>
 
-<h2 align="center"> First training session with LSTM model </h2>
+<h2 align="center"> First Results of training session </h2>
 
-![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/training_animation_progress.gif?raw=true)
+![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/training_animation_progress_REAL.gif?raw=true)
 <br>
 
 <h2 align="center"> Initial forecasting of simple example data </h2>
