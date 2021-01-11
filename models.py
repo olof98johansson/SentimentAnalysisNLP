@@ -6,6 +6,9 @@ import numpy as np
 
 
 class ModelUtils:
+    '''
+    A utility class to save and load model weights
+    '''
     def save_model(save_path, model):
         root, ext = os.path.splitext(save_path)
         if not ext:
@@ -26,8 +29,22 @@ class ModelUtils:
             print(f'Unable to load the weights, check if different model or incorrect path!')
 
 class RNNModel(nn.Module):
+    '''
+    RNN classifier with different available RNN types (basic RNN, LSTM, GRU)
+    '''
 
     def __init__(self, rnn_type, nr_layers, voc_size, emb_dim, rnn_size, dropout, n_classes):
+        '''
+        Initiates the RNN model
+
+        Input: rnn_type - specifies the rnn model type between "rnn", "lstm" or "gru" (type: string)
+               nr_layers - number of rnn layers (type: int)
+               voc_size - size of vocabulary of the encoded input data (type: int)
+               emb_dim - size of embedding layer (type: int)
+               rnn_size - number of hidden layers in RNN model (type: int)
+               dropout - probability of dropout layers (type: float in between [0, 1])
+               n_classes - number of different classes/labels (type: int)
+        '''
         super().__init__()
         self.rnn_size = rnn_size
         self.rnn_type = rnn_type
@@ -55,12 +72,21 @@ class RNNModel(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, X, hidden):
+        '''
+        Forward propagation of the RNN model
+
+        Input: X - batch of input data (type: torch tensor)
+               hidden - batch of input to the hidden cells (type: torch tensor)
+
+        Output: out - model prediction (type: torch tensor)
+                hidden - output of the hidden cells (torch.tensor)
+        '''
         self.batch_size = X.size(0)
         embedded = self.embedding(X)
 
 
         if self.rnn_type == 'rnn' or self.rnn_type == 'gru':
-            rnn_out, final_state = self.rnn(embedded, hidden)
+            rnn_out, hidden = self.rnn(embedded, hidden)
 
         elif self.rnn_type == 'lstm':
             rnn_out, hidden = self.rnn(embedded, hidden)
@@ -80,7 +106,9 @@ class RNNModel(nn.Module):
         return out, hidden
 
     def init_hidden(self, batch_size, device):
-        ''' Initializes hidden state '''
+        '''
+        Initializes hidden state
+        '''
         # Create two new tensors with sizes n_layers x batch_size x hidden_dim,
         # initialized to zero, for hidden state and cell state of LSTM
         h0 = torch.zeros((self.nr_layers, batch_size, self.rnn_size)).to(device)

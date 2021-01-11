@@ -11,7 +11,7 @@ import torch.nn as nn
 
 class config:
     '''
-        Configuration class to store and tune global variables
+    Configuration class to store and tune global variables
     '''
 
     PAD = '___PAD___'
@@ -33,7 +33,14 @@ class config:
 
 def collect_dataset(paths, keywords, nr_of_tweets, hashtags_to_remove, collect=True):
     '''
-        Collecting the dataset and cleans the data
+    Collecting the dataset and cleans the data
+
+    Input: paths - path to where to save the collected tweets (type: list of strings)
+           keywords - keywords to be used for collecting tweets (type: list of strings)
+           nr_of_tweets - number of tweets to be collected for each collecting process (type: list of ints)
+           collect - specifying if to collect tweets or not (type: boolean)
+
+    Output: dataset - cleaned dataset of the tweet texts and their labels (type: list if lists)
     '''
     roots, exts = [], []
     for path in paths:
@@ -56,7 +63,7 @@ def collect_dataset(paths, keywords, nr_of_tweets, hashtags_to_remove, collect=T
 
 class DocumentDataset(Dataset):
     '''
-        Basic class for creating dataset from the input and label data
+    Basic class for creating dataset from the input and label data
     '''
     def __init__(self, X, Y):
         self.X = X
@@ -71,8 +78,8 @@ class DocumentDataset(Dataset):
 
 class DocumentBatcher:
     '''
-        Process the batches to desired output by transform into torch tensors and pads uneven input text data
-        to the same length
+    Process the batches to desired output by transform into torch tensors and pads uneven input text data
+    to the same length
     '''
     def __init__(self, voc):
         self.pad = voc.get_pad_idx()
@@ -86,7 +93,7 @@ class DocumentBatcher:
 
 class Vocab:
     '''
-        Encoding the documents
+    Encoding the documents
     '''
 
     def __init__(self):
@@ -95,10 +102,10 @@ class Vocab:
 
     def build_vocab(self, docs):
         '''
-            Building the vocabulary from the documents, i.e creating the
-            word-to-encoding and encoding-to-word dicts
+        Building the vocabulary from the documents, i.e creating the
+        word-to-encoding and encoding-to-word dicts
 
-            Input: docs - list of all the lines in the corpus
+        Input: docs - list of all the lines in the corpus
         '''
 
         freqs = Counter(w for doc in docs for w in self.tokenizer(doc))
@@ -111,9 +118,8 @@ class Vocab:
 
     def encode(self, docs):
         '''
-            Encoding the documents
-
-            Input: docs - list of all the lines in the corpus
+        Encoding the documents
+        Input: docs - list of all the lines in the corpus
         '''
         unkn_index = self.word_to_enc[config.UNKNOWN]
         return [[self.word_to_enc.get(w, unkn_index) for w in self.tokenizer(doc)] for doc in docs]
@@ -130,8 +136,15 @@ class Vocab:
 
 def preprocess(batch_size=64, collect=True):
     '''
-        Function for preprocessing the data which splits the data into train/val, builds
-        the vocabulary, fits the label encoder and creates the dataloaders
+    Function for preprocessing the data which splits the data into train/val, builds the vocabulary, fits
+    the label encoder and creates the dataloaders for the train and validation set
+
+    Input: batch_size - batch size to be used in the data loaders (type: int)
+           collect - specifying if to collect data or not (type: boolean)
+
+    Output: dataloaders - the created data loaders for training and validation set (type: list of data loaders)
+            vocab_size - size of the built vocabulary (type: int)
+            n_classes - number of classes/ladels in the dataset
     '''
     data, keys = collect_dataset(paths=config.paths, keywords=config.keywords,
                            nr_of_tweets=config.nr_of_tweets,

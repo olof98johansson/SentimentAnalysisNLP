@@ -9,8 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_style('darkgrid')
-
-
+from celluloid import Camera
 
 
 def Logger(elapsed_time, epoch, epochs, tr_loss, tr_acc, val_loss, val_acc):
@@ -63,6 +62,9 @@ class EarlyStopping(object):
 
 
 class rnn_params:
+    '''
+    Configuration to store and tune RNN specific hyperparameters
+    '''
     rnn_type = 'lstm'
     emb_dim = 64
     rnn_size = 128
@@ -77,7 +79,13 @@ class rnn_params:
 
 def train_rnn(save_path = None, collect=True):
     '''
-        Training function for the rnn model that trains and validates the models performance
+    Training function for the rnn model that trains and validates the models performance
+
+    Input: save_path - path and file name to where to save the trained weights (type: string)
+           collect - specify if to collect data or not (type: boolean)
+
+    Output: history - history of the models training progression (type: defaultdict of lists)
+            early_stop_check - if early stopping has been executed or not (type: boolean)
     '''
     dataloaders, vocab_size, n_classes = preprocessing.preprocess(rnn_params.batch_size, collect=collect)
     train_loader, val_loader = dataloaders
@@ -154,6 +162,8 @@ def train_rnn(save_path = None, collect=True):
             return history, early_stop_check
 
     if save_path:
+        root, ext = os.path.splitext(save_path)
+        save_path = root + '.pth'
         models.ModelUtils.save_model(save_path=save_path, model=model)
 
 
@@ -183,7 +193,6 @@ def show_progress(history, save_name = None):
     plt.show()
 
 def animate_progress(history, save_path, early_stop_check):
-    from celluloid import Camera
     root, ext = os.path.splitext(save_path)
     save_path = root + '.gif'
 

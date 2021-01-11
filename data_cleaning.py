@@ -2,11 +2,15 @@
 import json
 import csv
 import re
-import numpy as np
 
 def load_json(path):
     '''
-        Loads collected data in json format and converts to csv
+    Loads collected data in json format, checks it and then converts to csv format
+
+    Input: path - path and file name to the collected json data (type: string)
+
+    Output: keys - list of features/keys of the dataframe (type: list of strings)
+            df_list - list containing all the dataframes from the json data (type: list of dataframes)
     '''
     if not path.endswith('.json'):
         print('File path not JSON file...')
@@ -22,14 +26,19 @@ def load_json(path):
 
     else:
         print(f'Original key features:\n{df_list[0].keys()}')
-        return df_list[0].keys(), df_list
+        keys = df_list[0].keys()
+        return keys, df_list
 
 
 def combine_and_label(paths, labels, train=True):
     '''
-        Combining multiple collections of data files and adds corresponding label
-        (i.e depressive or non-depressive). List of labels in correct order with
-        respect to the paths order must be specified manually
+    Combining multiple collections of data files and adds corresponding label (i.e depressive or non-depressive).
+    List of labels in correct order with respect to the paths order must be specified manually
+
+    Input: paths - list containing all the paths to the json files (type: list of strings)
+           labels - list containing all the labels to the corresponding json files (type: list of strings)
+
+    Output: df_list - list of all the combined dataframes from the json data (type: list of dataframes)
     '''
 
     if not type(paths)==type(list()):
@@ -59,10 +68,22 @@ def combine_and_label(paths, labels, train=True):
 
 def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=True):
     '''
-        Cleans the data based on unwanted hashtags, duplication of tweets occured due
-        to sharing of keywords, removal of mentions, urls, non-english alphabetic tokens
-        and empty tweets obtained after cleaning
+    Cleans the data based on unwanted hashtags, duplication of tweets occured due
+    to sharing of keywords, removal of mentions, urls, non-english alphabetic tokens
+    and empty tweets obtained after cleaning
+
+    Input: paths - list containing all the paths to the json files (type: list of strings)
+           labels - list containing all the labels to the corresponding json files (type: list of strings)
+           hashtags_to_remove - list containing hashtags wished to be removed (type: list of strings)
+           save_path - path and file name to were to save the cleaned dataset (type: string or None)
+           train - specify if it is training mode or not, i.e if to use labels or not (type: boolean)
+
+    Output: dataset_doc - list of all the text documents and corresponding labels if train (type: list of strings)
+            keys - list of features/keys of the dataframe (type: list of strings)
+
     '''
+    if len(labels) > 0:
+        train = True
 
     df_list = combine_and_label(paths, labels, train=train)
 
@@ -131,8 +152,9 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=T
             print(f'Exception:\n{e}')
 
     dataset_docs = [df['tweet'] for df in df_list]
+    keys = df_list[0].keys()
     if train:
         dataset_labels = [df['label'] for df in df_list]
-        return [dataset_docs, dataset_labels], df_list[0].keys()
+        return [dataset_docs, dataset_labels], keys
     else:
-        return dataset_docs, df_list[0].keys
+        return dataset_docs, keys

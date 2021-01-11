@@ -14,28 +14,42 @@ sns.set_style('darkgrid')
 
 
 class Config:
+    '''
+    Configuration class to store and tune global variables
+    '''
     test_set_keywords = []
-    test_set_nr_of_tweets = [1000, 1000, 1000, 1000, 1000, 1000]
+    test_set_nr_of_tweets = [2000, 2000, 2000, 2000, 2000, 2000, 2000]
+
+    # Locations spread out in UK to cover as wide geographical range as possible
     test_set_locations = ['london', 'liverpool', 'manchester',
-                          'newcastle', 'edinburgh', 'glasgow']
+                          'newcastle', 'edinburgh', 'glasgow', 'norwich']
 
-    test_set_json_paths = [['test11.json', 'test21.json', 'test31.json',
-                            'test41.json', 'test51.json', 'test61.json'],
-                           ['test12.json', 'test22.json', 'test32.json',
-                            'test42.json', 'test52.json', 'test62.json'],
-                           ['test13.json', 'test23.json', 'test33.json',
-                           'test43.json', 'test53.json', 'test63.json']
-                           ]
-    test_set_csv_paths = ['testalltime1.csv', 'testalltime2.csv', 'testalltime3.csv']
-    test_set_time_spans = [["2016-10-29 00:00:00", "2016-11-29 12:15:19"],
-                           ["2017-10-29 00:00:00", "2017-11-29 12:15:19"],
-                            ["2018-10-29 00:00:00", "2018-11-29 12:15:19"]]
+    len_locations = len(test_set_locations)
+    time_to = twint_scraping.get_weeks([2019, 9, 24], [2020, 3, 24]) # UK lockdown and 6 months back
+    time_from = twint_scraping.get_weeks([2020, 3, 24], [2020, 9, 24]) # UK lockdown and 6 months forward
+    test_set_time_spans = []
+    for tt in time_to:
+        test_set_time_spans.append(tt)
+    for tf in time_from:
+        test_set_time_spans.append(tf)
+    len_timespan = len(test_set_time_spans)
 
-    path_to_weights = './initial_test.pth'
+    test_set_json_paths = []
+    for t_idx in range(len_timespan):
+        time_spec_path = []
+        for l_idx in range(len_locations):
+            time_spec_path.append(f'./forecast_data/testdata_{l_idx}_{t_idx}.json')
+
+        test_set_json_paths.append(time_spec_path)
+
+    test_set_csv_paths = [f'./forecast_data/all_loc_{t_idx}.csv' for t_idx in range(len_timespan)]
+
+    path_to_weights = './weights/first_real_lstm.pth'
+
 
 class TestDataset(Dataset):
     '''
-        Basic class for creating dataset from the test input data
+    Basic class for creating dataset from the test input data
     '''
     def __init__(self, X):
         self.X = X
@@ -49,6 +63,21 @@ class TestDataset(Dataset):
 
 
 def get_testdata(paths, save_path, timespans, collect_test_data = False):
+    '''
+    Builds vocabulary and encoder based on the training data and collects, clean and builds data loaders
+    for the test data
+
+    Input: paths - path to store the collected test data with json extension (type: list of strings)
+           save_path - path to where to save the cleaned and final test dataset with csv
+                       extension (type: list of strings)
+           timespans - timespans of when the collected test tweets where tweeted (type: list of lists of strings)
+           collect_test_data - specifying if to collect test data or not (type: boolean)
+
+    Output: test_loader - data loader for the collected test data (type: DataLoader)
+            encoder - encoder trained on the training labels (type: LabelEncoder)
+            vocab_size - size of the vocabulary built from the training data (type: int)
+            n_classes: number of classes/labels from the training data (type: int)
+    '''
     roots, exts = [], []
     for path in paths:
         root, ext = os.path.splitext(path)
@@ -82,7 +111,19 @@ def get_testdata(paths, save_path, timespans, collect_test_data = False):
     return test_loader, encoder, vocab_size, n_classes
 
 
-def predict(testdata, path_to_weights, encoder, vocab_size, n_classes):
+def predict(testdata, path_to_weights, vocab_size, n_classes):
+    '''
+    Creates, loads and initiates the model and making predictions on the test data
+
+    Input: testdata - data loader of the test data (type: DataLoader)
+           path_to_weights - relative path and file name of the saved model weights with .pth extension (type:string)
+           vocab_size - size of the vocabulary (type: int)
+           n_classes - number of labels/classes that can be predicted (type: int)
+
+    Output: preds_prob_list - list of all the probabilities of which the model predicted
+                              the corresponding label (type: list of floats)
+            preds_status_list - list of all the reencoded labels that were predicted (type: list of strings)
+    '''
     rnn_params = train.rnn_params
     model = models.RNNModel(rnn_type=rnn_params.rnn_type, nr_layers=rnn_params.nr_layers,
                             voc_size=vocab_size, emb_dim=rnn_params.emb_dim, rnn_size=rnn_params.rnn_size,
@@ -108,36 +149,58 @@ def predict(testdata, path_to_weights, encoder, vocab_size, n_classes):
 
 
 def run_predictions(collect_test_data=False):
+    '''
+    Collect, preprocess and predicts the test data
+
+    Input: collect_test_data - weither or not to collect test data (type: boolean)
+
+    Output: status_results - all the predicted labels (type: dictionary of lists of strings)
+            preds_results - all the predicted values, i.e the certainties of
+                            the predictions (type: dictionary of lists of strings)
+    '''
     status_results = {}
     preds_results = {}
-    if collect_test_data:
-        for idx, ind_paths in enumerate(Config.test_set_json_paths):
-            testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
-                                             Config.test_set_csv_paths[idx],
-                                             timespans=Config.test_set_time_spans[idx],
-                                             collect_test_data=True)
+    try:
+        if collect_test_data:
+            for idx, ind_paths in enumerate(Config.test_set_json_paths):
+                testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
+                                                 Config.test_set_csv_paths[idx],
+                                                 timespans=Config.test_set_time_spans[idx],
+                                                 collect_test_data=True)
 
-            preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
-                                                    encoder, vocab_size, n_classes)
-            status_results[f'timespan_{idx}'] = preds_status_list
-            preds_results[f'timespan_{idx}'] = preds_list
 
-    else:
-        for idx, ind_paths in enumerate(Config.test_set_json_paths):
-            testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
-                                             Config.test_set_csv_paths[idx],
-                                             timespans=Config.test_set_time_spans[idx],
-                                             collect_test_data=False)
+        else:
+            for idx, ind_paths in enumerate(Config.test_set_json_paths):
+                testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
+                                                 Config.test_set_csv_paths[idx],
+                                                 timespans=Config.test_set_time_spans[idx],
+                                                 collect_test_data=False)
+    except Exception as e:
+        print(f'Exception:\n{e}')
+        print(f'Unable to get test data!')
+        return None
 
-            preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
-                                                    encoder, vocab_size, n_classes)
-            status_results[f'timespan_{idx}'] = preds_status_list
-            preds_results[f'timespan_{idx}'] = preds_list
-
+    for idx, ind_paths in enumerate(Config.test_set_json_paths):
+        preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
+                                                encoder, vocab_size, n_classes)
+        status_results[f'timespan_{idx}'] = preds_status_list
+        preds_results[f'timespan_{idx}'] = preds_list
     return status_results, preds_results
 
 
+
+
+
+
 def plot_predictions(status_results, preds_results, save_name='./predictions_forecast.png'):
+    '''
+    Plot the predictions in time order, i.e a time-based forecast of the predictions
+
+    Input: status_results - all the predicted labels (type: dictionary of lists of strings)
+           preds_results - all the predicted values, i.e the certainties of
+                           the predictions (type: dictionary of lists of strings)
+           save_name - path and filename to where to save the forecasting plot
+    '''
     timespans = list(status_results.keys())
     nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in range(len(timespans))]
     percentage_dep = [((np.array(status_results[timespans[t_idx]]) == 'depressive').sum())/len(status_results[timespans[t_idx]]) for t_idx in range(len(timespans))]
@@ -148,8 +211,10 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
     fig = plt.figure(figsize=(20, 10))
     plt.bar(timespans, percentage_dep, color="#ff3399", width=0.6, alpha = 0.7)
     for i, p in enumerate(percentage_dep):
-        plt.text(timespans[i], p / 2, f'{text_perc_dep[i]}%', color='black', fontweight='bold', fontsize=14)
-        plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', color='black', fontweight='bold', fontsize=10)
+        plt.text(timespans[i], p / 2, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
+                horizontalalignment='center', fontweight='bold', fontsize=14)
+        plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', verticalalignment='center',
+                 horizontalalignment='center', color='black', fontweight='bold', fontsize=10)
     plt.xlabel('Time period', fontsize=14)
     plt.ylabel('Percentage %', fontsize=14)
     plt.title('Percentage of depressive tweets', fontsize=18)
@@ -162,16 +227,22 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
 
 
 def run():
-    preprocessing.config.paths = ['depressive1.json',
-                                  'depressive2.json',
-                                  'depressive3.json',
-                                  'non-depressive1.json',
-                                  'non-depressive2.json',
-                                  'non-depressive3.json']
+    '''
+    Predict function to run the prediction process after specifying parameters
+    '''
+    preprocessing.config.paths = ['./training_data/depressive1.json',
+                                  './training_data/depressive2.json',
+                                  './training_data/depressive3.json',
+                                  './training_data/depressive4.json',
+                                  './training_data/non-depressive1.json',
+                                  './training_data/non-depressive2.json',
+                                  './training_data/non-depressive3.json',
+                                  './training_data/non-depressive4.json']
 
-    preprocessing.config.labels = ['depressive', 'depressive', 'depressive',
-                                   'not-depressive', 'not-depressive', 'not-depressive']
-    status_results, preds_results = run_predictions(collect_test_data=False)
+    preprocessing.config.labels = ['depressive', 'depressive', 'depressive', 'depressive',
+                                   'not-depressive', 'not-depressive','not-depressive','not-depressive']
+
+    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results)
 
 run()
