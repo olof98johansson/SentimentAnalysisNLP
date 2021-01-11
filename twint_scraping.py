@@ -39,7 +39,7 @@ def get_weeks(start_date, end_date):
 
 
 def collect_tweets(keywords = None, nr_tweets = None,
-                   output_file=None, near=None, timespan=[None, None]):
+                   output_file=None, coord=None, timespan=[None, None]):
     '''
     Collectiing tweets using twint based on different attributes and save to json file
 
@@ -67,7 +67,7 @@ def collect_tweets(keywords = None, nr_tweets = None,
     # Name of output file with format extension (i.e NAME.json, NAME.csv etc)
     config.Output = output_file
 
-    config.Near = near
+    config.Geo = coord
 
     # running search
     twint.run.Search(config)

@@ -25,7 +25,6 @@ def load_json(path):
         return None
 
     else:
-        print(f'Original key features:\n{df_list[0].keys()}')
         keys = df_list[0].keys()
         return keys, df_list
 
@@ -96,7 +95,7 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=T
             print(f'Tweet nr {idx} removed!')
             nr_removed_tweets += 1
 
-    print(f'Removed total of {nr_removed_tweets}')
+    print(f'Removed total of {nr_removed_tweets} tweets')
 
     # Removes duplicate of tweets
     unique_ids = {}
@@ -122,6 +121,9 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=T
         # Remove non-alphabetic tokens
         tweet = re.sub('[^A-Za-z]', ' ', tweet.lower())
 
+        # Remove double spacings
+        tweet = re.sub(' +', ' ', tweet)
+
         # Remove from dataset if tweet empty after cleaning
         if tweet == 0:
             df_list.pop(idx)
@@ -134,6 +136,7 @@ def datacleaning(paths, labels, hashtags_to_remove = [], save_path=None, train=T
     # Saving list of tweet dicts to csv format
 
     if save_path:
+        print(f'Saving data...')
         if not save_path.endswith('.csv'):
             print('Save path is missing .csv format extension!')
             save_path = save_path + '.csv'

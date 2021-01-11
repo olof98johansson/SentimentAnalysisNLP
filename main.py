@@ -11,20 +11,29 @@ def run():
                                   './training_data/depressive2.json',
                                   './training_data/depressive3.json',
                                   './training_data/depressive4.json',
+                                  './training_data/depressive5.json',
+                                  './training_data/depressive6.json',
                                   './training_data/non-depressive1.json',
                                   './training_data/non-depressive2.json',
                                   './training_data/non-depressive3.json',
-                                  './training_data/non-depressive4.json']
+                                  './training_data/non-depressive4.json',
+                                  './training_data/non-depressive5.json',
+                                  './training_data/non-depressive6.json']
 
-    preprocessing.config.labels = ['depressive', 'depressive', 'depressive', 'depressive',
-                                   'not-depressive', 'not-depressive', 'not-depressive', 'not-depressive']
+    preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    preprocessing.config.keywords = ['depressed', 'lonely','hatemyself', 'suicidal',
-                                     'happy', 'joy', 'health', 'love']
 
-    preprocessing.config.nr_of_tweets = [3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000]
+    preprocessing.config.labels = ['depressive', 'depressive', 'depressive', 'depressive', 'depressive', 'depressive',
+                                   'not-depressive', 'not-depressive', 'not-depressive', 'not-depressive',
+                                   'not-depressive', 'not-depressive']
 
-    history, early_stop_check = train.train_rnn(save_path='./weights/first_real_lstm.pth', collect=False) # Collect=False if already collected data
+    preprocessing.config.keywords = ['depressed', 'lonely', 'sad', 'depression', 'tired', 'anxious',
+                                     'happy', 'joy', 'thankful', 'hope', 'hopeful', 'glad']
+
+    preprocessing.config.nr_of_tweets = [5000, 5000, 5000, 5000, 5000, 5000,
+                                         5000, 5000, 5000, 5000, 5000, 5000]
+
+    history, early_stop_check = train.train_rnn(save_path='./weights/lstm_model_2.pth', collect=False) # Collect=False if already collected data
 
     train.show_progress(history=history, save_name='./plots/training_progress.png')
 

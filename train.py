@@ -75,7 +75,7 @@ class rnn_params:
     n_epochs = 30
     decay = 1e-5
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    patience = 3
+    patience = 5
 
 def train_rnn(save_path = None, collect=True):
     '''

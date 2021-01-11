@@ -19,6 +19,7 @@ class ModelUtils:
         except Exception as e:
             print(f'Unable to save model, check save path!')
             print(f'Exception:\n{e}')
+            return None
 
     def load_model(load_path, model):
         try:
@@ -27,6 +28,8 @@ class ModelUtils:
 
         except Exception as e:
             print(f'Unable to load the weights, check if different model or incorrect path!')
+            print(f'Exception:\n{e}')
+            return None
 
 class RNNModel(nn.Module):
     '''
@@ -99,7 +102,7 @@ class RNNModel(nn.Module):
         drop = self.dropout(rnn_out)
         out = self.linear(drop)
         out = self.sigmoid(out)
-        # reshape such batch size is first and get labels of last batch
+        # reshape such that batch size is first and get labels of last batch
         out = out.view(self.batch_size, -1)
         out = out[:, -1]
 
@@ -109,7 +112,6 @@ class RNNModel(nn.Module):
         '''
         Initializes hidden state
         '''
-        # Create two new tensors with sizes n_layers x batch_size x hidden_dim,
         # initialized to zero, for hidden state and cell state of LSTM
         h0 = torch.zeros((self.nr_layers, batch_size, self.rnn_size)).to(device)
         c0 = torch.zeros((self.nr_layers, batch_size, self.rnn_size)).to(device)

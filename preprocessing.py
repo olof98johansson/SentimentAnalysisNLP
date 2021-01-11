@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 import torch
 import torch.nn as nn
+from sklearn.utils import shuffle as s
+
 
 
 class config:
@@ -151,6 +153,7 @@ def preprocess(batch_size=64, collect=True):
                            hashtags_to_remove=config.hashtags_to_remove,
                                  collect=collect)
     X, Y = data
+    X,Y = s(X, Y)
     x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=0)
 
     vocab = Vocab()

@@ -21,15 +21,14 @@ class Config:
     Configuration class to store and tune global variables
     '''
     test_set_keywords = []
-    test_set_nr_of_tweets = [2000, 2000, 2000, 2000, 2000, 2000, 2000]
+    test_set_nr_of_tweets = [10000]
 
-    # Locations spread out in UK to cover as wide geographical range as possible
-    test_set_locations = ['london', 'liverpool', 'manchester',
-                          'newcastle', 'edinburgh', 'glasgow', 'norwich']
+    # Coordinates spread out in UK to cover as wide geographical range as possible
+    test_set_locations = ["54.251186,-4.463196,550km"]
 
     len_locations = len(test_set_locations)
-    time_to = twint_scraping.get_weeks([2019, 9, 24], [2020, 3, 24]) # UK lockdown and 6 months back
-    time_from = twint_scraping.get_weeks([2020, 3, 24], [2020, 9, 24]) # UK lockdown and 6 months forward
+    time_to = twint_scraping.get_weeks([2019, 12, 24], [2020, 3, 24]) # UK lockdown and 3 months back
+    time_from = twint_scraping.get_weeks([2020, 3, 24], [2020, 6, 24]) # UK lockdown and 3 months forward
     test_set_time_spans = []
     for tt in time_to:
         test_set_time_spans.append(tt)
@@ -47,7 +46,7 @@ class Config:
 
     test_set_csv_paths = [f'./forecast_data/all_loc_{t_idx}.csv' for t_idx in range(len_timespan)]
 
-    path_to_weights = './weights/first_real_lstm.pth'
+    path_to_weights = './weights/lstm_model_2.pth'
 
 
 class TestDataset(Dataset):
@@ -98,7 +97,7 @@ def get_testdata(paths, save_path, timespans, collect_test_data = False):
         for idx, json_path in enumerate(json_paths):
             twint_scraping.collect_tweets(nr_tweets=Config.test_set_nr_of_tweets[idx],
                                           output_file=json_path,
-                                          near=Config.test_set_locations[idx],
+                                          coord=Config.test_set_locations[idx],
                                           timespan=timespans)
     testdata, keys = data_cleaning.datacleaning(paths=json_paths, labels=[],
                                                hashtags_to_remove=[],
@@ -163,45 +162,24 @@ def run_predictions(collect_test_data=False):
     '''
     status_results = {}
     preds_results = {}
-    if collect_test_data:
-        for idx, ind_paths in enumerate(Config.test_set_json_paths):
-            try:
-                testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
-                                             Config.test_set_csv_paths[idx],
-                                             timespans=Config.test_set_time_spans[idx],
-                                             collect_test_data=True)
-                preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
-                                                        vocab_size, n_classes)
-                status_results[f'timespan_{idx}'] = preds_status_list
-                preds_results[f'timespan_{idx}'] = preds_list
 
-            except Exception as e:
-                print(f'Unable to get test data!')
-                print(f'Exception:\n{e}')
-                return None
+    for idx, ind_paths in enumerate(Config.test_set_json_paths):
+        try:
+            testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
+                                         Config.test_set_csv_paths[idx],
+                                         timespans=Config.test_set_time_spans[idx],
+                                         collect_test_data=collect_test_data)
+            preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
+                                                    vocab_size, n_classes)
+            status_results[f'timespan_{idx}'] = preds_status_list
+            preds_results[f'timespan_{idx}'] = preds_list
 
-
-    else:
-        for idx, ind_paths in enumerate(Config.test_set_json_paths):
-            try:
-                testdata, encoder, vocab_size, n_classes = get_testdata(ind_paths,
-                                             Config.test_set_csv_paths[idx],
-                                             timespans=Config.test_set_time_spans[idx],
-                                             collect_test_data=False)
-                preds_list, preds_status_list = predict(testdata, Config.path_to_weights,
-                                                        vocab_size, n_classes)
-                status_results[f'timespan_{idx}'] = preds_status_list
-                preds_results[f'timespan_{idx}'] = preds_list
-
-            except Exception as e:
-                print(f'Unable to get test data!')
-                print(f'Exception:\n{e}')
-                return None
+        except Exception as e:
+            print(f'Unable to get test data!')
+            print(f'Exception:\n{e}')
+            return None
 
     return status_results, preds_results
-
-
-
 
 
 
@@ -220,24 +198,30 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
     text_perc_dep = [format(percentage_dep[i]*100, '.2f') for i in range(len(percentage_dep))]
     ave_probs = [np.mean(np.array(preds_results[timespans[t_idx]])) for t_idx in range(len(timespans))]
     text_ave_probs = [format(ave_probs[i]*100, '.2f') for i in range(len(ave_probs))]
-
-    fig = plt.figure(figsize=(20, 10))
-    plt.bar(timespans, percentage_dep, color="#ff3399", width=0.6, alpha=0.7)
+    weeks = Config.test_set_time_spans
+    indexes = [f'{w[0].split()[0]} - {w[1].split()[0]}' for w in weeks]
+    if not len(indexes) == len(percentage_dep):
+        indexes = timespans
+    fig = plt.figure(figsize=(21, 12))
+    plt.bar(indexes, percentage_dep, color="#ff3399", width=0.3, alpha=0.4)
+    plt.plot(indexes, percentage_dep, color="#cc99ff", alpha=0.7)
     for i, p in enumerate(percentage_dep):
-        plt.text(timespans[i], p / 2, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
-                horizontalalignment='center', fontweight='bold', fontsize=10)
-        plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', verticalalignment='center',
-                 horizontalalignment='center', color='black', fontweight='bold', fontsize=8)
+        plt.text(timespans[i], p + 0.02, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
+                horizontalalignment='center', fontweight='bold', fontsize=7)
+       # plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', verticalalignment='center',
+       #          horizontalalignment='center', color='black', fontweight='bold', fontsize=8)
     plt.xlabel('Time period', fontsize=14)
     plt.ylabel('Percentage %', fontsize=14)
+    plt.ylim(-0.05, 1)
     plt.title('Percentage of depressive tweets', fontsize=18)
+
     if save_name:
         root, ext = os.path.splitext(save_name)
         save_name = root + '.png'
         plt.savefig(save_name, bbox_inches='tight')
     plt.show()
 
-def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png'):
+def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.mp4'):
     timespans = list(status_results.keys())
     nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in range(len(timespans))]
     nr_nondepressive = [(np.array(status_results[timespans[t_idx]]) == 'non-depressive').sum() for t_idx in range(len(timespans))]
@@ -246,12 +230,16 @@ def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast
     ave_probs = [np.mean(np.array(preds_results[timespans[t_idx]])) for t_idx in range(len(timespans))]
     text_ave_probs = [format(ave_probs[i] * 100, '.2f') for i in range(len(ave_probs))]
     percentage_antidep = [1-percentage_dep[i] for i in range(len(percentage_dep))]
+
+    df_dict = {'depressive': percentage_dep,
+                'non-depressive': percentage_antidep}
     weeks = Config.test_set_time_spans
-    df_dict = {'depressive': nr_depressive,
-                'non-depressive': nr_nondepressive}
     indexes = [f'{w[0].split()[0]} - {w[1].split()[0]}' for w in weeks]
 
     predictions_df = pd.DataFrame(df_dict, index=indexes)
+    predictions_df.index.rename('date', inplace=True)
+
+
     root, ext = os.path.splitext(save_name)
     save_name = root+'.mp4'
     bcr.bar_chart_race(
@@ -259,17 +247,31 @@ def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast
         filename=save_name,
         orientation='h',
         sort='desc',
-        label_bars=True,
-        use_index=True,
+        n_bars=2,
+        fixed_order=False,
+        fixed_max=True,
         steps_per_period=10,
+        interpolate_period=False,
+        label_bars=True,
+        bar_size=.95,
+        period_label={'x': .99, 'y': .25, 'ha': 'right', 'va': 'center'},
+        period_fmt='%B %d, %Y',
+
+        perpendicular_bar_func='median',
         period_length=500,
-        figsize=(6.5, 3.5),
-        cmap='dark24',
+        figsize=(5, 3),
+        dpi=144,
+        cmap='dark12',
         title='Forecasting of depressive vs non-depressive tweets',
+        title_size='',
         bar_label_size=7,
         tick_label_size=7,
-        period_label_size=16,
-        fig=None)
+        shared_fontdict={'family': 'Helvetica', 'color': '.1'},
+        scale='linear',
+        writer=None,
+        fig=None,
+        bar_kwargs={'alpha': .7},
+        filter_column_colors=False)
 
 
 
@@ -281,17 +283,24 @@ def run():
                                   './training_data/depressive2.json',
                                   './training_data/depressive3.json',
                                   './training_data/depressive4.json',
+                                  './training_data/depressive5.json',
+                                  './training_data/depressive6.json',
                                   './training_data/non-depressive1.json',
                                   './training_data/non-depressive2.json',
                                   './training_data/non-depressive3.json',
-                                  './training_data/non-depressive4.json']
+                                  './training_data/non-depressive4.json',
+                                  './training_data/non-depressive5.json',
+                                  './training_data/non-depressive6.json']
 
-    preprocessing.config.labels = ['depressive', 'depressive', 'depressive', 'depressive',
-                                   'not-depressive', 'not-depressive','not-depressive','not-depressive']
+    preprocessing.config.labels = ['depressive', 'depressive', 'depressive', 'depressive', 'depressive', 'depressive',
+                                   'not-depressive', 'not-depressive', 'not-depressive', 'not-depressive',
+                                   'not-depressive', 'not-depressive']
+    preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    status_results, preds_results = run_predictions(collect_test_data=False) # collect_test_data=False if already collected
+    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results)
     forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+
 
 run()
 
