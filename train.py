@@ -67,7 +67,7 @@ class rnn_params:
     '''
     rnn_type = 'lstm'
     emb_dim = 64
-    rnn_size = 128
+    rnn_size = 64
     nr_layers = 1
     dropout = 0.5
     lr = 1e-3

@@ -183,7 +183,7 @@ def run_predictions(collect_test_data=False):
 
 
 
-def plot_predictions(status_results, preds_results, save_name='./predictions_forecast.png'):
+def plot_predictions(status_results, preds_results, save_name='./predictions_forecast.png', color=None):
     '''
     Plot the predictions in time order, i.e a time-based forecast of the predictions
 
@@ -199,27 +199,35 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
     ave_probs = [np.mean(np.array(preds_results[timespans[t_idx]])) for t_idx in range(len(timespans))]
     text_ave_probs = [format(ave_probs[i]*100, '.2f') for i in range(len(ave_probs))]
     weeks = Config.test_set_time_spans
-    indexes = [f'{w[0].split()[0]} - {w[1].split()[0]}' for w in weeks]
+    indexes = [f'{w[0].split()[0]}\n{w[1].split()[0]}' for w in weeks]
+    if color:
+        color_bar = color
+    else:
+        color_bar = "#ff3399"
     if not len(indexes) == len(percentage_dep):
         indexes = timespans
-    fig = plt.figure(figsize=(21, 12))
-    plt.bar(indexes, percentage_dep, color="#ff3399", width=0.3, alpha=0.4)
+    fig = plt.figure(figsize=(42, 12))
+    plt.bar(indexes, percentage_dep, color=color_bar, width=0.3, alpha=0.25)
     plt.plot(indexes, percentage_dep, color="#cc99ff", alpha=0.7)
     for i, p in enumerate(percentage_dep):
-        plt.text(timespans[i], p + 0.02, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
-                horizontalalignment='center', fontweight='bold', fontsize=7)
+        plt.text(indexes[i], p + 0.02, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
+                horizontalalignment='center', fontweight='bold', fontsize=8)
        # plt.text(timespans[i], p+0.005, f'Average target prob: {text_ave_probs[i]}%', verticalalignment='center',
        #          horizontalalignment='center', color='black', fontweight='bold', fontsize=8)
     plt.xlabel('Time period', fontsize=14)
     plt.ylabel('Percentage %', fontsize=14)
-    plt.ylim(-0.05, 1)
-    plt.title('Percentage of depressive tweets', fontsize=18)
+    plt.ylim(-0.05, 0.7)
+    plt.xticks(fontsize=7)
+    plt.title(f'Percentage of depressive tweets weekly from {indexes[0].split()[0]} to {indexes[len(indexes)-1].split()[1]}', fontsize=14)
 
     if save_name:
         root, ext = os.path.splitext(save_name)
         save_name = root + '.png'
         plt.savefig(save_name, bbox_inches='tight')
     plt.show()
+
+
+
 
 def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.mp4'):
     timespans = list(status_results.keys())
@@ -297,9 +305,28 @@ def run():
                                    'not-depressive', 'not-depressive']
     preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
+    status_results, preds_results = run_predictions(collect_test_data=False) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results)
     forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+
+    # comparing to same period year before
+    Config.time_to = twint_scraping.get_weeks([2018, 12, 24], [2019, 3, 24])
+    Config.time_from = twint_scraping.get_weeks([2019, 3, 24], [2019, 6, 24])
+
+    status_results, preds_results = run_predictions(
+        collect_test_data=True)  # collect_test_data=False if already collected
+    plot_predictions(status_results, preds_results,color="#9999ff")
+    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+
+    # Comparing to from 3 months after lockdown to recent
+    Config.time_to = twint_scraping.get_weeks([2020, 6, 24], [2020, 9, 24])
+    Config.time_from = twint_scraping.get_weeks([2020, 9, 24], [2020, 12, 24])
+
+    status_results, preds_results = run_predictions(
+        collect_test_data=True)  # collect_test_data=False if already collected
+    plot_predictions(status_results, preds_results, color="#80ffbf")
+    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+
 
 
 run()

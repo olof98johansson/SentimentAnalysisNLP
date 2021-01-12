@@ -28,12 +28,12 @@ def run():
                                    'not-depressive', 'not-depressive']
 
     preprocessing.config.keywords = ['depressed', 'lonely', 'sad', 'depression', 'tired', 'anxious',
-                                     'happy', 'joy', 'thankful', 'hope', 'hopeful', 'glad']
+                                     'happy', 'joy', 'thankful', 'health', 'hopeful', 'glad']
 
-    preprocessing.config.nr_of_tweets = [5000, 5000, 5000, 5000, 5000, 5000,
-                                         5000, 5000, 5000, 5000, 5000, 5000]
+    preprocessing.config.nr_of_tweets = [1000, 1000, 1000, 1000, 1000, 1000,
+                                         1000, 1000, 1000, 1000, 1000, 1000]
 
-    history, early_stop_check = train.train_rnn(save_path='./weights/lstm_model_2.pth', collect=False) # Collect=False if already collected data
+    history, early_stop_check = train.train_rnn(save_path='./weights/lstm_model_2.pth', collect=True) # Collect=False if already collected data
 
     train.show_progress(history=history, save_name='./plots/training_progress.png')
 
