@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 sns.set_style('darkgrid')
+from celluloid import Camera
 
 import bar_chart_race as bcr
 
@@ -21,13 +22,13 @@ class Config:
     Configuration class to store and tune global variables
     '''
     test_set_keywords = []
-    test_set_nr_of_tweets = [10000]
+    test_set_nr_of_tweets = [5000]
 
     # Coordinates spread out in UK to cover as wide geographical range as possible
     test_set_locations = ["54.251186,-4.463196,550km"]
 
     len_locations = len(test_set_locations)
-    time_to = twint_scraping.get_weeks([2019, 12, 24], [2020, 3, 24]) # UK lockdown and 3 months back
+    time_to = twint_scraping.get_weeks([2019, 12, 24], [2020, 3, 17]) # UK lockdown and 3 months back
     time_from = twint_scraping.get_weeks([2020, 3, 24], [2020, 6, 24]) # UK lockdown and 3 months forward
     test_set_time_spans = []
     for tt in time_to:
@@ -205,9 +206,10 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
     else:
         color_bar = "#ff3399"
     if not len(indexes) == len(percentage_dep):
+        print('Time indexes does not equal number of values')
         indexes = timespans
     fig = plt.figure(figsize=(42, 12))
-    plt.bar(indexes, percentage_dep, color=color_bar, width=0.3, alpha=0.25)
+    plt.bar(indexes, percentage_dep, color=color_bar, width=0.55, alpha=0.25)
     plt.plot(indexes, percentage_dep, color="#cc99ff", alpha=0.7)
     for i, p in enumerate(percentage_dep):
         plt.text(indexes[i], p + 0.02, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
@@ -216,7 +218,7 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
        #          horizontalalignment='center', color='black', fontweight='bold', fontsize=8)
     plt.xlabel('Time period', fontsize=14)
     plt.ylabel('Percentage %', fontsize=14)
-    plt.ylim(-0.05, 0.7)
+    plt.ylim(-0.05, 0.6)
     plt.xticks(fontsize=7)
     plt.title(f'Percentage of depressive tweets weekly from {indexes[0].split()[0]} to {indexes[len(indexes)-1].split()[1]}', fontsize=14)
 
@@ -229,57 +231,37 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
 
 
 
+
 def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.mp4'):
+    import pandas_alive
     timespans = list(status_results.keys())
-    nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in range(len(timespans))]
-    nr_nondepressive = [(np.array(status_results[timespans[t_idx]]) == 'non-depressive').sum() for t_idx in range(len(timespans))]
-    percentage_dep = [((np.array(status_results[timespans[t_idx]]) == 'depressive').sum()) / len(status_results[timespans[t_idx]]) for t_idx in range(len(timespans))]
+    nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in
+                     range(len(timespans))]
+    nr_nondepressive = [(np.array(status_results[timespans[t_idx]]) == 'non-depressive').sum() for t_idx in
+                        range(len(timespans))]
+    percentage_dep = [
+        ((np.array(status_results[timespans[t_idx]]) == 'depressive').sum()) / len(status_results[timespans[t_idx]]) for
+        t_idx in range(len(timespans))]
     text_perc_dep = [format(percentage_dep[i] * 100, '.2f') for i in range(len(percentage_dep))]
     ave_probs = [np.mean(np.array(preds_results[timespans[t_idx]])) for t_idx in range(len(timespans))]
     text_ave_probs = [format(ave_probs[i] * 100, '.2f') for i in range(len(ave_probs))]
-    percentage_antidep = [1-percentage_dep[i] for i in range(len(percentage_dep))]
+    percentage_antidep = [1 - percentage_dep[i] for i in range(len(percentage_dep))]
 
     df_dict = {'depressive': percentage_dep,
-                'non-depressive': percentage_antidep}
+               'non-depressive': percentage_antidep}
     weeks = Config.test_set_time_spans
-    indexes = [f'{w[0].split()[0]} - {w[1].split()[0]}' for w in weeks]
-
-    predictions_df = pd.DataFrame(df_dict, index=indexes)
+    indexes = [f'{w[0].split()[0]}' for w in weeks]
+    predictions_df = pd.DataFrame(df_dict, index=pd.DatetimeIndex(indexes))
     predictions_df.index.rename('date', inplace=True)
 
-
     root, ext = os.path.splitext(save_name)
-    save_name = root+'.mp4'
-    bcr.bar_chart_race(
-        df=predictions_df,
-        filename=save_name,
-        orientation='h',
-        sort='desc',
-        n_bars=2,
-        fixed_order=False,
-        fixed_max=True,
-        steps_per_period=10,
-        interpolate_period=False,
-        label_bars=True,
-        bar_size=.95,
-        period_label={'x': .99, 'y': .25, 'ha': 'right', 'va': 'center'},
-        period_fmt='%B %d, %Y',
+    save_name = root + '.gif'
+    save_name_pie = root + '.gif'
 
-        perpendicular_bar_func='median',
-        period_length=500,
-        figsize=(5, 3),
-        dpi=144,
-        cmap='dark12',
-        title='Forecasting of depressive vs non-depressive tweets',
-        title_size='',
-        bar_label_size=7,
-        tick_label_size=7,
-        shared_fontdict={'family': 'Helvetica', 'color': '.1'},
-        scale='linear',
-        writer=None,
-        fig=None,
-        bar_kwargs={'alpha': .7},
-        filter_column_colors=False)
+    #predictions_df.plot_animated(filename=save_name, period_fmt="%Y-%m-%d")
+    predictions_df.plot_animated(filename=save_name_pie, period_fmt="%Y-%m-%d",
+                                 title= f'Weekly ratio between non-depressive and depressive tweets in the UK',
+                                 kind="pie", rotatelabels=True, period_label={'x': 0, 'y': 0.95})
 
 
 
@@ -305,27 +287,62 @@ def run():
                                    'not-depressive', 'not-depressive']
     preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    status_results, preds_results = run_predictions(collect_test_data=False) # collect_test_data=False if already collected
+    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results)
-    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race_orig.gif')
 
     # comparing to same period year before
     Config.time_to = twint_scraping.get_weeks([2018, 12, 24], [2019, 3, 24])
     Config.time_from = twint_scraping.get_weeks([2019, 3, 24], [2019, 6, 24])
+    test_set_time_spans = []
+    for tt in Config.time_to:
+        test_set_time_spans.append(tt)
+    for tf in Config.time_from:
+        test_set_time_spans.append(tf)
+    len_timespan = len(test_set_time_spans)
+    Config.test_set_time_spans = test_set_time_spans
+    Config.len_timespan = len_timespan
+    test_set_json_paths = []
+    for t_idx in range(len_timespan):
+        time_spec_path = []
+        for l_idx in range(Config.len_locations):
+            time_spec_path.append(f'./forecast_data/testdata_yearbefore_{l_idx}_{t_idx}.json')
+
+        test_set_json_paths.append(time_spec_path)
+    Config.test_set_json_paths = test_set_json_paths
+    Config.test_set_csv_paths = [f'./forecast_data/all_loc_year_before_{t_idx}.csv' for t_idx in range(len_timespan)]
 
     status_results, preds_results = run_predictions(
         collect_test_data=True)  # collect_test_data=False if already collected
-    plot_predictions(status_results, preds_results,color="#9999ff")
-    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+    plot_predictions(status_results, preds_results,color="#3366ff")
+    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race_last_year.gif')
 
     # Comparing to from 3 months after lockdown to recent
     Config.time_to = twint_scraping.get_weeks([2020, 6, 24], [2020, 9, 24])
-    Config.time_from = twint_scraping.get_weeks([2020, 9, 24], [2020, 12, 24])
+    Config.time_from = twint_scraping.get_weeks([2020, 9, 24], [2020, 12, 17])
+
+    test_set_time_spans = []
+    for tt in Config.time_to:
+        test_set_time_spans.append(tt)
+    for tf in Config.time_from:
+        test_set_time_spans.append(tf)
+    len_timespan = len(test_set_time_spans)
+    Config.test_set_time_spans = test_set_time_spans
+    Config.len_timespan = len_timespan
+    test_set_json_paths = []
+    for t_idx in range(len_timespan):
+        time_spec_path = []
+        for l_idx in range(Config.len_locations):
+            time_spec_path.append(f'./forecast_data/testdata_uptorecent_{l_idx}_{t_idx}.json')
+
+        test_set_json_paths.append(time_spec_path)
+    Config.test_set_json_paths = test_set_json_paths
+    Config.test_set_csv_paths = [f'./forecast_data/all_loc_up_to_recent_{t_idx}.csv' for t_idx in range(len_timespan)]
 
     status_results, preds_results = run_predictions(
         collect_test_data=True)  # collect_test_data=False if already collected
-    plot_predictions(status_results, preds_results, color="#80ffbf")
-    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.png')
+    plot_predictions(status_results, preds_results, color="#00cc66")
+    forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race_up_to_now.gif')
 
 
 
