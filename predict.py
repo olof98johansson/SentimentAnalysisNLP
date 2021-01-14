@@ -208,8 +208,8 @@ def plot_predictions(status_results, preds_results, save_name='./predictions_for
         print('Time indexes does not equal number of values')
         indexes = timespans
     fig = plt.figure(figsize=(28, 12))
-    plt.bar(indexes, percentage_dep, color=color_bar, width=0.55, alpha=0.25)
-    plt.plot(indexes, percentage_dep, color="#cc99ff", alpha=0.7)
+    plt.bar(indexes, percentage_dep, color=color_bar, width=0.55, alpha=0.35)
+    plt.plot(indexes, percentage_dep, color="#cc99ff", alpha=0.5)
     for i, p in enumerate(percentage_dep):
         plt.text(indexes[i], p + 0.02, f'{text_perc_dep[i]}%', verticalalignment='center', color='black',
                 horizontalalignment='center', fontweight='bold', fontsize=8)
@@ -256,11 +256,11 @@ def plot_all_predictions(status_results1, status_results2, status_results3, week
 
 
     fig = plt.figure(figsize=(28, 12))
-    plt.bar(x-0.2, percentage_dep1, color=colors[0], width=0.2, alpha=0.25,
+    plt.bar(x-0.2, percentage_dep1, color=colors[0], width=0.2, alpha=0.4,
             label=f'{indexes1[0].split()[0]} to {indexes1[len(indexes1)-1].split()[1]}')
-    plt.bar(x, percentage_dep2, color=colors[1], width=0.2, alpha=0.25,
+    plt.bar(x, percentage_dep2, color=colors[1], width=0.2, alpha=0.4,
             label=f'{indexes2[0].split()[0]} to {indexes2[len(indexes2) - 1].split()[1]}')
-    plt.bar(x+0.2, percentage_dep3, color=colors[2], width=0.2, alpha=0.25,
+    plt.bar(x+0.2, percentage_dep3, color=colors[2], width=0.2, alpha=0.4,
             label=f'{indexes3[0].split()[0]} to {indexes3[len(indexes3) - 1].split()[1]}')
 
     plt.xlabel('Time periods', fontsize=16)
@@ -340,10 +340,12 @@ def run():
 
     preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    status_results, preds_results = run_predictions(collect_test_data=False) # collect_test_data=False if already collected
+    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results, save_name='./plots/forecast_orig.png')
     forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race_orig.gif')
     week1 = Config.test_set_time_spans
+
+
     # comparing to same period year before
     Config.time_to = twint_scraping.get_weeks([2018, 12, 24], [2019, 3, 24])
     Config.time_from = twint_scraping.get_weeks([2019, 3, 24], [2019, 6, 24])
@@ -365,7 +367,7 @@ def run():
     Config.test_set_json_paths = test_set_json_paths
     Config.test_set_csv_paths = [f'./forecast_data/all_loc_year_before_{t_idx}.csv' for t_idx in range(len_timespan)]
     week2 = Config.test_set_time_spans
-    status_results_before, preds_results_before = run_predictions(collect_test_data=False)  # collect_test_data=False if already collected
+    status_results_before, preds_results_before = run_predictions(collect_test_data=True)  # collect_test_data=False if already collected
     plot_predictions(status_results_before, preds_results_before, save_name='./plots/forecast_year_before.png', color="#3366ff")
     forecast_bar_race(status_results_before, preds_results_before, save_name='./plots/forecast_bar_race_last_year.gif')
 
@@ -391,7 +393,7 @@ def run():
     Config.test_set_json_paths = test_set_json_paths
     Config.test_set_csv_paths = [f'./forecast_data/all_loc_up_to_recent_{t_idx}.csv' for t_idx in range(len_timespan)]
     week3 = Config.test_set_time_spans
-    status_results_uptonow, preds_results_uptonow = run_predictions(collect_test_data=False)  # collect_test_data=False if already collected
+    status_results_uptonow, preds_results_uptonow = run_predictions(collect_test_data=True)  # collect_test_data=False if already collected
     plot_predictions(status_results_uptonow, preds_results_uptonow, save_name='./plots/forecast_up_to_now.png', color="#00cc66")
     forecast_bar_race(status_results_uptonow, preds_results_uptonow, save_name='./plots/forecast_bar_race_up_to_now.gif')
 
