@@ -57,9 +57,9 @@ The results show the forecast of the percentage of depressive tweets, weekly col
      <td>3 months after lockdown to recent</td>
   </tr>
   <tr>
-    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_orig.gif" width=270></td>
-    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_last_year.gif" width=270></td>
-    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_up_to_now.gif" width=270></td>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_orig.gif" width=300></td>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_last_year.gif" width=300></td>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_up_to_now.gif" width=300></td>
   </tr>
  </table>
 
