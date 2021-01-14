@@ -38,9 +38,11 @@ The results show the forecast of the percentage of depressive tweets, weekly col
 <h2 align="center"> From three months after the initial UK lockdown to recent (dec 2020) </h2>
 
 ![Third forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_up_to_now.png?raw=true)
+
 <br>
 
 <h2 align="center"> Comparison of them all </h2>
+
 ![Comparison](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/comparison.png?raw=true)
 
 <hr>
