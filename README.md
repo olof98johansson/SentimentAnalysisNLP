@@ -17,17 +17,49 @@ This project aims to build different NLP models for sentiment analysis and class
 
 <hr>
 
-<h2 align="center"> First Results of training session </h2>
+<h2 align="center"> Results of training session with LSTM model </h2>
 
-![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/training_animation_progress_REAL.gif?raw=true)
+![First training session](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/training_animation_progress_REAL.gif?raw=true)
 <br>
 
-<h2 align="center"> Initial forecasting of simple example data </h2>
+<h1 align="center"> Results </h2>
+The results show the forecast of the percentage of depressive tweets, weekly collected, predicted by the LSTM model.
 
-![First forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/predictions_forecast.png?raw=true)
+<h2 align="center"> From three months before UK initial lockdown to three months after </h2>
+
+![First forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_orig.png?raw=true)
 <br>
+
+<h2 align="center"> Same time period for the previous year </h2>
+
+![Second forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_year_before.png?raw=true)
+<br>
+
+<h2 align="center"> From three months after the initial UK lockdown to recent (dec 2020) </h2>
+
+![Third forecast](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_up_to_now.png?raw=true)
+<br>
+
+<h2 align="center"> Comparison of them all </h2>
+![Comparison](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/comparison.png?raw=true)
 
 <hr>
+
+
+<h2 align="center"> Animated time series of the forecasts </h2>
+
+<table>
+  <tr>
+    <td>3 months before and after UK lockdownn</td>
+     <td>Same period previous year</td>
+     <td>3 months after lockdown to recent</td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_orig.gif" width=270></td>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_last_year.gif" width=270></td>
+    <td><img src="https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/plots/forecast_bar_race_up_to_now.gif" width=270></td>
+  </tr>
+ </table>
 
 
 <h2 align="center"> Example of using twint </h2>
