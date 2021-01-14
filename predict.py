@@ -104,7 +104,7 @@ def get_testdata(paths, save_path, timespans, collect_test_data = False):
                                                save_path=csv_path, train=False)
 
     cleaned_csv_path = save_root + '_cleaned.csv'
-    df = pd.DataFrame(data={"col1": testdata})
+    df = pd.DataFrame(data={"test docs": testdata})
     df.to_csv(cleaned_csv_path, sep=',', index=False)
 
     pad = vocab.get_pad_idx()

@@ -93,9 +93,7 @@ def train_rnn(save_path = None, collect=True):
                             voc_size=vocab_size, emb_dim=rnn_params.emb_dim, rnn_size=rnn_params.rnn_size,
                             dropout=rnn_params.dropout, n_classes=n_classes)
 
-    #loss_fn = nn.CrossEntropyLoss()
     loss_fn = nn.BCELoss()
-    #loss_fn = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=rnn_params.lr, weight_decay=rnn_params.decay)
     model.to(rnn_params.device)
 
