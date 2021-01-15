@@ -2,7 +2,7 @@
 To run the files, make sure all the dependencies are installed. Do this by running
 
 ```
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 in the terminal. Then to run the training process for the LSTM model along with the data collection, data cleaning and preprocessing, type
