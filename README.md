@@ -23,7 +23,7 @@ python -m predict.py
 
 <h2 align="center"> Sentiment Analysis to Classify Depression from Twitter Using Tweets Before andAfter COVID-19 Through Different NLP Approaches </h2>
 
-<b>Camille Porter, Olof Johansson, Savya Sachi Gupta</b>
+<b>[Camille Porter](https://github.com/finli), [Olof Johansson](https://github.com/olof98johansson), [Savya Sachi Gupta](https://github.com/foo-bar-omastar)</b>
 
 Independent project in course <b>DAT450: Machine Learning for Natural Language Processing</b>
 
