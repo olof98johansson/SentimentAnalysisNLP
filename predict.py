@@ -5,14 +5,13 @@ import data_cleaning
 import os
 import torch
 import twint_scraping
-from collections import defaultdict
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 sns.set_style('darkgrid')
-from celluloid import Camera
+import pandas_alive
 
 
 
@@ -289,7 +288,7 @@ def plot_all_predictions(status_results1, status_results2, status_results3, week
 
 
 def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race.mp4'):
-    import pandas_alive
+
     timespans = list(status_results.keys())
     nr_depressive = [(np.array(status_results[timespans[t_idx]]) == 'depressive').sum() for t_idx in
                      range(len(timespans))]
@@ -323,7 +322,7 @@ def forecast_bar_race(status_results, preds_results, save_name='./plots/forecast
 
 def run():
     '''
-    Predict function to run the prediction process after specifying parameters
+    Predict function to run the prediction process after specifying parameters for all three time periods
     '''
     preprocessing.config.paths = ['./training_data/depressive1.json',
                                   './training_data/depressive2.json',
@@ -344,7 +343,7 @@ def run():
 
     preprocessing.config.save_path = './training_data/all_training_data.csv'
 
-    status_results, preds_results = run_predictions(collect_test_data=False) # collect_test_data=False if already collected
+    status_results, preds_results = run_predictions(collect_test_data=True) # collect_test_data=False if already collected
     plot_predictions(status_results, preds_results, save_name='./plots/forecast_orig.png')
     forecast_bar_race(status_results, preds_results, save_name='./plots/forecast_bar_race_orig.gif')
     week1 = Config.test_set_time_spans
@@ -371,7 +370,7 @@ def run():
     Config.test_set_json_paths = test_set_json_paths
     Config.test_set_csv_paths = [f'./forecast_data/all_loc_year_before_{t_idx}.csv' for t_idx in range(len_timespan)]
     week2 = Config.test_set_time_spans
-    status_results_before, preds_results_before = run_predictions(collect_test_data=False)  # collect_test_data=False if already collected
+    status_results_before, preds_results_before = run_predictions(collect_test_data=True)  # collect_test_data=False if already collected
     plot_predictions(status_results_before, preds_results_before, save_name='./plots/forecast_year_before.png', color="#3366ff")
     forecast_bar_race(status_results_before, preds_results_before, save_name='./plots/forecast_bar_race_last_year.gif')
 
@@ -397,7 +396,7 @@ def run():
     Config.test_set_json_paths = test_set_json_paths
     Config.test_set_csv_paths = [f'./forecast_data/all_loc_up_to_recent_{t_idx}.csv' for t_idx in range(len_timespan)]
     week3 = Config.test_set_time_spans
-    status_results_uptonow, preds_results_uptonow = run_predictions(collect_test_data=False)  # collect_test_data=False if already collected
+    status_results_uptonow, preds_results_uptonow = run_predictions(collect_test_data=True)  # collect_test_data=False if already collected
     plot_predictions(status_results_uptonow, preds_results_uptonow, save_name='./plots/forecast_up_to_now.png', color="#00cc66")
     forecast_bar_race(status_results_uptonow, preds_results_uptonow, save_name='./plots/forecast_bar_race_up_to_now.gif')
 

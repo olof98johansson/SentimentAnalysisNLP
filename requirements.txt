@@ -1,0 +1,14 @@
+re 
+torch
+numpy
+matplotlib
+collections
+seaborn
+sklearn
+git+https://github.com/twintproject/twint.git@origin/master#egg=twint
+nest_asyncio
+dateutil
+datetime
+celluloid
+
+
