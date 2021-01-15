@@ -17,7 +17,7 @@ and then to collect the test data as well as perform the weekly based prediction
 python -m predict.py
 ```
 
-## Below is a short, partial discription about the project itself including methodology and results 
+#### Below is a short, partial discription about the project itself including methodology and results 
 
 <hr>
 
@@ -35,21 +35,7 @@ We aim to understand the affect of the COVID-19 pandemic on mental health, speci
 
 <br>
 
-<h2 align="center"> Table of contents</h2>
 
-1. [Methodology](Methodology)
-
-    1. [Data Collection](Data Collection)
-    
-    2. [Preprocessing](Preprocessing)
-    
-    3. [Models](models)
-    
-2. [Results](Results)
-
-    1. [Training](Training)
-    
-    2. [Time period analysis](forecast)
 
 
 # Methodology <a name="Methodology"></a>
