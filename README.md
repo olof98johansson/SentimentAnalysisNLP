@@ -10,7 +10,6 @@ This project aims to build different NLP models for sentiment analysis and class
 | ◾ <input type="checkbox" disabled  checked/> Text processing |  :heavy_check_mark:    |
 | ◾ <input type="checkbox" disabled  checked/>  Preprocessing |  :heavy_check_mark:   |
 | ◾ <input type="checkbox" disabled  checked/> Implement NLP models |  :heavy_check_mark:   |
-| ◾ <input type="checkbox" disabled  checked/> Benchmarking |   :no_entry_sign:   |
 | ◾ <input type="checkbox" disabled  checked/> Visualizations |  :heavy_check_mark:    |
 | ◾ <input type="checkbox" disabled  checked/> Test predictions |  :heavy_check_mark:    |
 | ◾ <input type="checkbox" disabled  checked/> Forecasting | :heavy_check_mark:    |
