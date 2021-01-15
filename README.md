@@ -30,7 +30,7 @@ Independent project in course <b>DAT450: Machine Learning for Natural Language P
 Chalmers Institute of Technology, Sweden
 
 
-<h3 align="center"> Abstract </h3>
+<h3 align="center"> Quick Overview </h3>
 We aim to understand the affect of the COVID-19 pandemic on mental health, specifically depression, by performing sentiment analysis on ‘tweets’ shared on the social media service  Twitter.  We  selected  the  United  Kingdom  and  Ireland for our analysis as they had a government instituted lockdown across the country, which provides us with a definitive date as a reference point to gauge trends before and after. In order to understand how a lockdown affects depression, we sampled tweets from these locations and trained two different models to detect depression in tweets — a LSTM model, and theDistilBERT  model, which is a condensed form of BERT. We scraped 5,000 tweets for each week that we measured during multiple time periods. The LSTM model performed better than DistilBERT yielding an accuracy of 0.94 as compared to 0.90 for DistilBERT. We found a 2-3% bump in the levelof depression two weeks after lockdown started, but no longterm changes.
 
 <br>
@@ -49,8 +49,9 @@ tokens. Thus, a pre-processing step cleaned the tweets as above and also removed
 ## Models <a name="models"></a>
 The initial model used for the sentiment analysis was a standardized embedding, that converts input integer tokens into real-valued data, followed by a Long-Short-Term-Memory (LSTM) model with an added feed-forward layer with dropout as output layer. The initial states, $h0$ and $c0$, of the LSTM network were zero initiated and the output of the feed-forward output layer was then fed into a sigmoid function, also used as the activation function in the LSTM network. As the problem is binary classification, the loss was thereafter computed by the binary cross entropy loss (BCE). Lastly, the decoding of the output from the predictions on the test data was done as
 
+<p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=f_{decode}(\hat{y})&space;=&space;\begin{cases}&space;\text{\textit{depressive}},&space;\quad&space;\text{if&space;$\hat{y}_i&space;<&space;0.5$}\\&space;\text{\textit{not-depressive}},&space;\quad&space;\text{if&space;$\hat{y}_i&space;\geq&space;0.5$}\end{cases}" target="_blank"><img align="center" src="https://latex.codecogs.com/gif.latex?f_{decode}(\hat{y})&space;=&space;\begin{cases}&space;\text{\textit{depressive}},&space;\quad&space;\text{if&space;$\hat{y}_i&space;<&space;0.5$}\\&space;\text{\textit{not-depressive}},&space;\quad&space;\text{if&space;$\hat{y}_i&space;\geq&space;0.5$}\end{cases}" title="f_{decode}(\hat{y}) = \begin{cases} \text{\textit{depressive}}, \quad \text{if $\hat{y}_i < 0.5$}\\ \text{\textit{not-depressive}}, \quad \text{if $\hat{y}_i \geq 0.5$}\end{cases}" /></a>
-
+</p>
 
 The code for the LSTM model and the training function is found in [models.py](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/models.py) file and [train.py](https://github.com/olof98johansson/SentimentAnalysisNLP/blob/main/train.py) file respectively.
 <br>
